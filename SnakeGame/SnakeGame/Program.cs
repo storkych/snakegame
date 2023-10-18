@@ -19,7 +19,6 @@ class Program
             {
                 // Игровое поле
                 DrawGameArea();
-                // Здесь вы можете добавить логику для змейки и других элементов игры
 
                 keyInfo = Console.ReadKey(true);
                 if (keyInfo.Key == ConsoleKey.Escape)
@@ -68,7 +67,6 @@ class Program
                         // Если выбран "Новая игра", начинаем игру
                         isPlaying = true;
                     }
-                    // Здесь можно добавить обработку других пунктов меню
                 }
             }
         }
@@ -76,7 +74,7 @@ class Program
 
     static void DrawGameArea()
     {
-        Console.OutputEncoding = System.Text.Encoding.UTF8; // Установить кодировку для отображения символов Unicode
+        Console.OutputEncoding = System.Text.Encoding.UTF8; 
 
         Console.ForegroundColor = ConsoleColor.White;
         Console.BackgroundColor = ConsoleColor.Black;
