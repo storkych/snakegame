@@ -1,47 +1,68 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using static System.Console;
 
-class Program
+namespace Zmeika2
 {
-    static void Main()
+    class Program
     {
-        Console.CursorVisible = false;
-        Console.BackgroundColor = ConsoleColor.Black;
-        bool isPlaying = false;
+        private const int MapWidth = 30;
+        private const int MapHeight = 20;
 
-        while (true)
+        private const int ScreenWidth = MapWidth * 3;
+        private const int ScreenHeight = MapHeight * 3;
+
+        private const int FrameMilliseconds = 200;
+
+        private const ConsoleColor BorderColor = ConsoleColor.White;
+        private const ConsoleColor FoodColor = ConsoleColor.Green;
+        private const ConsoleColor BodyColor = ConsoleColor.White;
+        private const ConsoleColor HeadColor = ConsoleColor.DarkGray;
+
+        private static readonly Random Random = new Random();
+
+        static void Main()
         {
-            Console.Clear();
+            ConsoleKeyInfo keyInfo;
+            int selectedItem = 0;
+            bool isPlaying = false;
 
-            if (isPlaying)
+            SetWindowSize(ScreenWidth, ScreenHeight);
+            SetBufferSize(ScreenWidth, ScreenHeight);
+            CursorVisible = false;
+
+            while (true)
             {
-                // Игровое поле
+                Clear();
 
-                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-
-                if (keyInfo.Key == ConsoleKey.Escape)
+                if (isPlaying)
                 {
+                    StartGame();
                     isPlaying = false;
                 }
-            }
-            else
-            {
-                string[] menuItems = { "1. Начать игру", "2. Выйти" };
-                int selectedItem = 0;
-
-                while (true)
+                else
                 {
-                    Console.Clear();
+                    string[] menuItems = { "Продолжить", "Новая игра", "Таблица рекордов", "Выход" };
 
                     for (int i = 0; i < menuItems.Length; i++)
                     {
-                        Console.ForegroundColor = i == selectedItem ? ConsoleColor.White : ConsoleColor.Gray;
-                        Console.WriteLine(i == selectedItem ? ">> " + menuItems[i] : "   " + menuItems[i]);
+                        if (i == selectedItem)
+                        {
+                            ForegroundColor = ConsoleColor.White;
+                        }
+                        else
+                        {
+                            ForegroundColor = ConsoleColor.Gray;
+                        }
+
+                        WriteLine((i == selectedItem ? ">> " : "   ") + menuItems[i]);
                     }
 
-                    ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+                    keyInfo = ReadKey(true);
 
                     if (keyInfo.Key == ConsoleKey.W && selectedItem > 0)
                     {
@@ -53,208 +74,270 @@ class Program
                     }
                     else if (keyInfo.Key == ConsoleKey.Enter)
                     {
-                        if (selectedItem == 0)
+                        if (selectedItem == 3)
                         {
-                            StartGame();
-                            isPlaying = true;
+                            break;
                         }
-                        else
+                        else if (selectedItem == 1)
                         {
-                            return;
+                            isPlaying = true;
                         }
                     }
                 }
             }
         }
+
+        static void StartGame()
+        {
+            int score = 0;
+
+            Clear();
+            DrawBoard();
+
+            Snake snake = new Snake(10, 5, HeadColor, BodyColor);
+
+            Pixel food = GenFood(snake);
+            food.Draw();
+
+            Direction currentMovement = Direction.Right;
+
+            int lagMs = 0;
+            var sw = new Stopwatch();
+
+            int bottomRow = ScreenHeight - 1;
+            SetCursorPosition(ScreenWidth / 3, bottomRow);
+            Write($"Score: {score}");
+
+            while (true)
+            {
+                sw.Restart();
+                Direction oldMovement = currentMovement;
+
+                while (sw.ElapsedMilliseconds <= FrameMilliseconds - lagMs)
+                {
+                    if (currentMovement == oldMovement)
+                        currentMovement = ReadMovement(currentMovement);
+                }
+
+                sw.Restart();
+
+                if (snake.Head.X == food.X && snake.Head.Y == food.Y)
+                {
+                    snake.Move(currentMovement, true);
+                    food = GenFood(snake);
+                    food.Draw();
+
+                    score++;
+
+                    SetCursorPosition(ScreenWidth / 3, bottomRow);
+                    Write($"Score: {score}");
+                }
+                else
+                {
+                    snake.Move(currentMovement);
+                }
+
+                if (snake.Head.X == MapWidth - 1
+                    || snake.Head.X == 0
+                    || snake.Head.Y == MapHeight - 1
+                    || snake.Head.Y == 0
+                    || snake.Body.Any(b => b.X == snake.Head.X && b.Y == snake.Head.Y))
+                    break;
+
+                lagMs = (int)sw.ElapsedMilliseconds;
+            }
+
+            snake.Clear();
+            food.Clear();
+
+
+            if (Console.WindowHeight > bottomRow + 1)
+            {
+                SetCursorPosition(ScreenWidth / 3, bottomRow + 1);
+                WriteLine("Game over, press any key to continue.");
+            }
+            else
+            {
+                WriteLine("Game over, press any key to continue.");
+            }
+        }
+
+        static void DrawBoard()
+        {
+            for (int i = 0; i < MapWidth; i++)
+            {
+                new Pixel(i, 0, BorderColor).Draw();
+                new Pixel(i, MapHeight - 1, BorderColor).Draw();
+            }
+
+            for (int i = 0; i < MapHeight; i++)
+            {
+                new Pixel(0, i, BorderColor).Draw();
+                new Pixel(MapWidth - 1, i, BorderColor).Draw();
+            }
+        }
+
+        static Pixel GenFood(Snake snake)
+        {
+            Pixel food;
+
+            do
+            {
+                food = new Pixel(Random.Next(1, MapWidth - 2), Random.Next(1, MapHeight - 2), FoodColor);
+            } while (snake.Head.X == food.X && snake.Head.Y == food.Y ||
+                     snake.Body.Any(b => b.X == food.X && b.Y == food.Y));
+
+            return food;
+        }
+
+        static Direction ReadMovement(Direction currentDirection)
+        {
+            if (!KeyAvailable)
+                return currentDirection;
+
+            ConsoleKeyInfo keyInfo = ReadKey(true);
+            ConsoleKey key = keyInfo.Key;
+
+            if (key == ConsoleKey.W && currentDirection != Direction.Down)
+                return Direction.Up;
+            if (key == ConsoleKey.S && currentDirection != Direction.Up)
+                return Direction.Down;
+            if (key == ConsoleKey.A && currentDirection != Direction.Right)
+                return Direction.Left;
+            if (key == ConsoleKey.D && currentDirection != Direction.Left)
+                return Direction.Right;
+
+            return currentDirection;
+        }
     }
 
-    static void StartGame()
+    public enum Direction
     {
-        int width = 80;
-        int height = 40;
+        Up,
+        Down,
+        Right,
+        Left
+    }
 
-        SnakeGame game = new SnakeGame(width, height);
-        game.Run();
+    public readonly struct Pixel
+    {
+        private const char PixelChar = '█';
 
-        Console.Clear();
-        Console.WriteLine("  ▄▄ •  ▄▄▄· • ▌ ▄ ·. ▄▄▄ .         ▌ ▐·▄▄▄ .▄▄▄  ");
-        Console.WriteLine(" ▐█ ▀ ▪▐█ ▀█ ·██ ▐███▪▀▄.▀·   ▄█▀▄ ▪█·█▌▀▄.▀·▀▄ █·");
-        Console.WriteLine(" ▄█ ▀█▄▄█▀▀█ ▐█ ▌▐▌▐█·▐▀▀▪▄  ▐█▌.▐▌▐█▐█•▐▀▀▪▄▐▀▀▄ ");
-        Console.WriteLine(" ▐█▄▪▐█▐█▪ ▐▌██ ██▌▐█▌▐█▄▄▌  ▐█▌.▐▌ ███ ▐█▄▄▌▐█•█▌");
-        Console.WriteLine("  ·▀▀▀▀  ▀  ▀ ▀▀  █▪▀▀▀ ▀▀▀    ▀█▄▀▪. ▀   ▀▀▀ .▀  ▀");
-        Console.WriteLine("\nИгра завершена. Ваш счет: " + game.Score);
-
-        while (true)
+        public Pixel(int x, int y, ConsoleColor color, int pixelSize = 3)
         {
-            ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-            if (keyInfo.Key == ConsoleKey.Enter)
+            X = x;
+            Y = y;
+            Color = color;
+            PixelSize = pixelSize;
+        }
+
+        public int X { get; }
+
+        public int Y { get; }
+
+        public ConsoleColor Color { get; }
+
+        public int PixelSize { get; }
+
+        public void Draw()
+        {
+            ForegroundColor = Color;
+            for (int x = 0; x < PixelSize; x++)
             {
-                return;
+                for (int y = 0; y < PixelSize; y++)
+                {
+                    SetCursorPosition(X * PixelSize + x, Y * PixelSize + y);
+                    Write(PixelChar);
+                }
+            }
+        }
+
+        public void Clear()
+        {
+            for (int x = 0; x < PixelSize; x++)
+            {
+                for (int y = 0; y < PixelSize; y++)
+                {
+                    SetCursorPosition(X * PixelSize + x, Y * PixelSize + y);
+                    Write(' ');
+                }
             }
         }
     }
-}
 
-class SnakeGame
-{
-    private int width;
-    private int height;
-    private int snakeX;
-    private int snakeY;
-    private int foodX;
-    private int foodY;
-    private List<int> tailX;
-    private List<int> tailY;
-    private int score;
-    private bool isGameOver;
-    private Direction direction;
-
-    public int Score { get; private set; }
-
-    public SnakeGame(int width, int height)
+    public class Snake
     {
-        this.width = width;
-        this.height = height;
-        snakeX = width / 2;
-        snakeY = height / 2;
-        tailX = new List<int>();
-        tailY = new List<int>();
-        foodX = new Random().Next(1, width - 1);
-        foodY = new Random().Next(1, height - 1);
-        score = 0;
-        isGameOver = false;
-        direction = Direction.Right;
-        Console.CursorVisible = false;
-    }
+        private readonly ConsoleColor _headColor;
+        private readonly ConsoleColor _bodyColor;
 
-    public void Run()
-    {
-        while (!isGameOver)
+        public Snake(int initialX,
+            int initialY,
+            ConsoleColor headColor,
+            ConsoleColor bodyColor,
+            int bodyLength = 3)
         {
-            if (Console.KeyAvailable)
+            _headColor = headColor;
+            _bodyColor = bodyColor;
+
+            Head = new Pixel(initialX, initialY, headColor);
+
+            for (int i = bodyLength; i >= 0; i--)
             {
-                var key = Console.ReadKey(true).Key;
-                ProcessKey(key);
+                Body.Enqueue(new Pixel(Head.X - i - 1, initialY, _bodyColor));
             }
 
-            MoveSnake();
-            if (snakeX == foodX && snakeY == foodY)
+            Draw();
+        }
+
+        public Pixel Head { get; private set; }
+        public Queue<Pixel> Body { get; } = new Queue<Pixel>();
+
+        public void Move(Direction direction, bool eat = false)
+        {
+            Clear();
+
+            Body.Enqueue(new Pixel(Head.X, Head.Y, _bodyColor));
+            if (!eat)
+                Body.Dequeue();
+
+            if (direction == Direction.Right)
             {
-                EatFood();
-                GenerateFood();
+                Head = new Pixel(Head.X + 1, Head.Y, _headColor);
+            }
+            else if (direction == Direction.Left)
+            {
+                Head = new Pixel(Head.X - 1, Head.Y, _headColor);
+            }
+            else if (direction == Direction.Up)
+            {
+                Head = new Pixel(Head.X, Head.Y - 1, _headColor);
+            }
+            else if (direction == Direction.Down)
+            {
+                Head = new Pixel(Head.X, Head.Y + 1, _headColor);
             }
 
-            if (snakeX == 0 || snakeX == width - 1 || snakeY == 0 || snakeY == height - 1 || CheckCollisionWithTail())
+            Draw();
+        }
+
+        public void Draw()
+        {
+            Head.Draw();
+
+            foreach (Pixel pixel in Body)
             {
-                isGameOver = true;
+                pixel.Draw();
             }
-
-            DrawGame();
-            Thread.Sleep(100);
         }
-    }
 
-    private void ProcessKey(ConsoleKey key)
-    {
-        switch (key)
+        public void Clear()
         {
-            case ConsoleKey.W:
-                if (direction != Direction.Down)
-                    direction = Direction.Up;
-                break;
-            case ConsoleKey.S:
-                if (direction != Direction.Up)
-                    direction = Direction.Down;
-                break;
-            case ConsoleKey.A:
-                if (direction != Direction.Right)
-                    direction = Direction.Left;
-                break;
-            case ConsoleKey.D:
-                if (direction != Direction.Left)
-                    direction = Direction.Right;
-                break;
+            Head.Clear();
+
+            foreach (Pixel pixel in Body)
+            {
+                pixel.Clear();
+            }
         }
     }
-
-    private void MoveSnake()
-    {
-        int prevX = snakeX;
-        int prevY = snakeY;
-
-        for (int i = 0; i < tailX.Count; i++)
-        {
-            int tempX = tailX[i];
-            int tempY = tailY[i];
-            tailX[i] = prevX;
-            tailY[i] = prevY;
-            prevX = tempX;
-            prevY = tempY;
-        }
-
-        switch (direction)
-        {
-            case Direction.Up:
-                snakeY--;
-                break;
-            case Direction.Down:
-                snakeY++;
-                break;
-            case Direction.Left:
-                snakeX--;
-                break;
-            case Direction.Right:
-                snakeX++;
-                break;
-        }
-    }
-
-    private void EatFood()
-    {
-        score++;
-        tailX.Add(0);
-        tailY.Add(0);
-    }
-
-    private void GenerateFood()
-    {
-        foodX = new Random().Next(1, width - 1);
-        foodY = new Random().Next(1, height - 1);
-    }
-
-    private bool CheckCollisionWithTail()
-    {
-        for (int i = 0; i < tailX.Count; i++)
-        {
-            if (snakeX == tailX[i] && snakeY == tailY[i])
-                return true;
-        }
-        return false;
-    }
-
-    private void DrawGame()
-    {
-        Console.SetCursorPosition(foodX, foodY);
-        Console.Write("■");
-
-        Console.SetCursorPosition(snakeX, snakeY);
-        Console.Write("■");
-
-        for (int i = 0; i < tailX.Count; i++)
-        {
-            Console.SetCursorPosition(tailX[i], tailY[i]);
-            Console.Write("■");
-        }
-
-        Console.SetCursorPosition(0, height);
-        Console.Write($"Score: {score}");
-    }
-}
-
-enum Direction
-{
-    Up,
-    Down,
-    Left,
-    Right
 }
