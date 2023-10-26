@@ -90,6 +90,7 @@ namespace Zmeika2
         static void StartGame()
         {
             int score = 0;
+            bool isGameOver = false;
 
             Clear();
             DrawBoard();
@@ -104,11 +105,11 @@ namespace Zmeika2
             int lagMs = 0;
             var sw = new Stopwatch();
 
-            int bottomRow = ScreenHeight - 1;
-            SetCursorPosition(ScreenWidth / 3, bottomRow);
-            Write($"Score: {score}");
+            int topOffset = 7;
 
-            while (true)
+            int bottomRow = ScreenHeight - 1 - topOffset;
+
+            while (!isGameOver)
             {
                 sw.Restart();
                 Direction oldMovement = currentMovement;
@@ -128,9 +129,6 @@ namespace Zmeika2
                     food.Draw();
 
                     score++;
-
-                    SetCursorPosition(ScreenWidth / 3, bottomRow);
-                    Write($"Score: {score}");
                 }
                 else
                 {
@@ -142,7 +140,9 @@ namespace Zmeika2
                     || snake.Head.Y == MapHeight - 1
                     || snake.Head.Y == 0
                     || snake.Body.Any(b => b.X == snake.Head.X && b.Y == snake.Head.Y))
-                    break;
+                {
+                    isGameOver = true;
+                }
 
                 lagMs = (int)sw.ElapsedMilliseconds;
             }
@@ -150,17 +150,44 @@ namespace Zmeika2
             snake.Clear();
             food.Clear();
 
-
-            if (Console.WindowHeight > bottomRow + 1)
+            for (int i = 1; i < MapWidth - 1; i++)
             {
-                SetCursorPosition(ScreenWidth / 3, bottomRow + 1);
-                WriteLine("Game over, press any key to continue.");
+                for (int j = 1; j < MapHeight - 1; j++)
+                {
+                    SetCursorPosition(i * 3, j);
+                    Write(" ");
+                }
             }
-            else
+
+            string[] title = new string[]
             {
-                WriteLine("Game over, press any key to continue.");
+        "  ▄▄ •  ▄▄▄· • ▌ ▄ ·. ▄▄▄ .         ▌ ▐·▄▄▄ .▄▄▄  ",
+        " ▐█ ▀ ▪▐█ ▀█ ·██ ▐███▪▀▄.▀·   ▄█▀▄ ▪█·█▌▀▄.▀·▀▄ █·",
+        " ▄█ ▀█▄▄█▀▀█ ▐█ ▌▐▌▐█·▐▀▀▪▄  ▐█▌.▐▌▐█▐█•▐▀▀▪▄▐▀▀▄ ",
+        " ▐█▄▪▐█▐█▪ ▐▌██ ██▌▐█▌▐█▄▄▌  ▐█▌.▐▌ ███ ▐█▄▄▌▐█•█▌",
+        "  ·▀▀▀▀  ▀  ▀ ▀▀  █▪▀▀▀ ▀▀▀    ▀█▄▀▪. ▀   ▀▀▀ .▀  ▀"
+            };
+
+            for (int i = 0; i < title.Length; i++)
+            {
+                SetCursorPosition((ScreenWidth - title[i].Length) / 2, i + topOffset);
+                WriteLine(title[i]);
+            }
+
+            SetCursorPosition((ScreenWidth - 16) / 2, topOffset + title.Length + 1);
+            WriteLine($"Score: {score}");
+
+            SetCursorPosition((ScreenWidth - 32) / 2, topOffset + title.Length + 3);
+            WriteLine("Press Enter to return to the main menu.");
+
+            while (true)
+            {
+                var keyInfo = ReadKey(true);
+                if (keyInfo.Key == ConsoleKey.Enter)
+                    break;
             }
         }
+
 
         static void DrawBoard()
         {
