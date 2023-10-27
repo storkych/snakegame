@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,7 +42,8 @@ namespace Zmeika2
 
                 if (isPlaying)
                 {
-                    StartGame();
+                    string playerName = GetPlayerName();
+                    StartGame(playerName);
                     isPlaying = false;
                 }
                 else
@@ -82,15 +84,27 @@ namespace Zmeika2
                         {
                             isPlaying = true;
                         }
+                        else if (selectedItem == 2)
+                        {
+                            DisplayLeaderboard();
+                        }
                     }
                 }
             }
         }
 
-        static void StartGame()
+        static string GetPlayerName()
+        {
+            Console.Clear();
+            Console.Write("Введите свое имя: ");
+            return Console.ReadLine();
+        }
+
+        static void StartGame(string playerName)
         {
             int score = 0;
             bool isGameOver = false;
+            bool isPaused = false;
 
             Clear();
             DrawBoard();
@@ -105,9 +119,10 @@ namespace Zmeika2
             int lagMs = 0;
             var sw = new Stopwatch();
 
-            int topOffset = 7;
+            int topOffset = 7; // Отступ сверху для заголовка и счета
 
             int bottomRow = ScreenHeight - 1 - topOffset;
+            int continueGameRow = topOffset + 1; // Строка "Продолжить игру" в главном меню
 
             while (!isGameOver)
             {
@@ -117,7 +132,55 @@ namespace Zmeika2
                 while (sw.ElapsedMilliseconds <= FrameMilliseconds - lagMs)
                 {
                     if (currentMovement == oldMovement)
-                        currentMovement = ReadMovement(currentMovement);
+                    {
+                        if (!isPaused)
+                        {
+                            currentMovement = ReadMovement(currentMovement);
+                        }
+                        else
+                        {
+                            SetCursorPosition((ScreenWidth - 19) / 2, continueGameRow);
+                            WriteLine("                  "); // Очистить строку "Продолжить игру"
+                        }
+                    }
+
+                    if (KeyAvailable)
+                    {
+                        ConsoleKeyInfo keyInfo = ReadKey(true);
+
+                        if (keyInfo.Key == ConsoleKey.Escape)
+                        {
+                            if (isPaused)
+                            {
+                                isPaused = false;
+                                DrawBoard();
+                            }
+                            else
+                            {
+                                isGameOver = true;
+                            }
+                        }
+                        else if (keyInfo.Key == ConsoleKey.P)
+                        {
+                            isPaused = !isPaused;
+
+                            if (isPaused)
+                            {
+                                SetCursorPosition((ScreenWidth - 19) / 2, continueGameRow);
+                                WriteLine("Продолжить игру");
+                            }
+                            else
+                            {
+                                SetCursorPosition((ScreenWidth - 19) / 2, continueGameRow);
+                                WriteLine("                  "); // Очистить строку "Продолжить игру"
+                            }
+                        }
+                    }
+                }
+
+                if (isPaused)
+                {
+                    continue; // Игра на паузе, пропустить кадр
                 }
 
                 sw.Restart();
@@ -177,8 +240,11 @@ namespace Zmeika2
             SetCursorPosition((ScreenWidth - 16) / 2, topOffset + title.Length + 1);
             WriteLine($"Score: {score}");
 
+            // Сохранить результат в таблицу рекордов
+            SavePlayerResult(playerName, score);
+
             SetCursorPosition((ScreenWidth - 32) / 2, topOffset + title.Length + 3);
-            WriteLine("Press Enter to return to the main menu.");
+            WriteLine("Нажмите Enter, чтобы вернуться в главное меню.");
 
             while (true)
             {
@@ -188,6 +254,46 @@ namespace Zmeika2
             }
         }
 
+        static void SavePlayerResult(string playerName, int score)
+        {
+            string playerData = $"{playerName}: {score}";
+            File.AppendAllLines("leaderboard.txt", new[] { playerData });
+        }
+
+        static void DisplayLeaderboard()
+        {
+            Console.Clear();
+            Console.WriteLine("Таблица рекордов:");
+
+            // Прочитать данные из файла и вывести на экран
+            if (File.Exists("leaderboard.txt"))
+            {
+                string[] leaderboardData = File.ReadAllLines("leaderboard.txt");
+                var leaderboard = new List<KeyValuePair<string, int>>();
+
+                foreach (var entry in leaderboardData)
+                {
+                    string[] parts = entry.Split(':');
+                    if (parts.Length == 2 && int.TryParse(parts[1].Trim(), out int score))
+                    {
+                        leaderboard.Add(new KeyValuePair<string, int>(parts[0].Trim(), score));
+                    }
+                }
+
+                // Сортируем таблицу рекордов
+                leaderboard.Sort((a, b) => b.Value.CompareTo(a.Value));
+
+                int rank = 1;
+                foreach (var entry in leaderboard.Take(10))
+                {
+                    Console.WriteLine($"{rank}. {entry.Key}: {entry.Value}");
+                    rank++;
+                }
+            }
+
+            Console.WriteLine("\nНажмите Enter, чтобы вернуться в главное меню.");
+            while (Console.ReadKey().Key != ConsoleKey.Enter) { }
+        }
 
         static void DrawBoard()
         {
