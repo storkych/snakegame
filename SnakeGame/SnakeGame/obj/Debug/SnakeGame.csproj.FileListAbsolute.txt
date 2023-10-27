@@ -12,3 +12,10 @@ C:\Users\storkych\Documents\GitHub\snakegame\SnakeGame\SnakeGame\obj\Debug\Snake
 C:\Users\storkych\Documents\GitHub\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGame.csproj.CoreCompileInputs.cache
 C:\Users\storkych\Documents\GitHub\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGame.exe
 C:\Users\storkych\Documents\GitHub\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGame.pdb
+D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\bin\Debug\SnakeGame.exe.config
+D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\bin\Debug\SnakeGame.exe
+D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\bin\Debug\SnakeGame.pdb
+D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGame.csproj.AssemblyReference.cache
+D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGame.csproj.CoreCompileInputs.cache
+D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGame.exe
+D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGame.pdb

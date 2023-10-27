@@ -26,7 +26,6 @@ namespace Zmeika2
 
         private static readonly Random Random = new Random();
 
-
         static void Main()
         {
             ConsoleKeyInfo keyInfo;
@@ -120,6 +119,11 @@ namespace Zmeika2
             int lagMs = 0;
             var sw = new Stopwatch();
 
+            int topOffset = 7; // Отступ сверху для заголовка и счета
+
+            int bottomRow = ScreenHeight - 1 - topOffset;
+            int continueGameRow = topOffset + 1; // Строка "Продолжить игру" в главном меню
+
             while (!isGameOver)
             {
                 sw.Restart();
@@ -132,6 +136,11 @@ namespace Zmeika2
                         if (!isPaused)
                         {
                             currentMovement = ReadMovement(currentMovement);
+                        }
+                        else
+                        {
+                            SetCursorPosition((ScreenWidth - 19) / 2, continueGameRow);
+                            WriteLine("                  "); // Очистить строку "Продолжить игру"
                         }
                     }
 
@@ -154,6 +163,17 @@ namespace Zmeika2
                         else if (keyInfo.Key == ConsoleKey.P)
                         {
                             isPaused = !isPaused;
+
+                            if (isPaused)
+                            {
+                                SetCursorPosition((ScreenWidth - 19) / 2, continueGameRow);
+                                WriteLine("Продолжить игру");
+                            }
+                            else
+                            {
+                                SetCursorPosition((ScreenWidth - 19) / 2, continueGameRow);
+                                WriteLine("                  "); // Очистить строку "Продолжить игру"
+                            }
                         }
                     }
                 }
@@ -213,17 +233,18 @@ namespace Zmeika2
 
             for (int i = 0; i < title.Length; i++)
             {
-                SetCursorPosition(1, i);
+                SetCursorPosition((ScreenWidth - title[i].Length) / 2, i + topOffset);
                 WriteLine(title[i]);
             }
 
-            SetCursorPosition(1, title.Length);
+            SetCursorPosition((ScreenWidth - 16) / 2, topOffset + title.Length + 1);
             WriteLine($"Score: {score}");
 
+            // Сохранить результат в таблицу рекордов
             SavePlayerResult(playerName, score);
 
-            SetCursorPosition(1, title.Length + 2);
-            WriteLine("Press Enter to return to the main menu.");
+            SetCursorPosition((ScreenWidth - 32) / 2, topOffset + title.Length + 3);
+            WriteLine("Нажмите Enter, чтобы вернуться в главное меню.");
 
             while (true)
             {
