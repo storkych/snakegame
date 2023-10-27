@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 using static System.Console;
 
-namespace Zmeika2
+namespace SnakeGame
 {
     class Program
     {
         private const int MapWidth = 30;
         private const int MapHeight = 20;
+        private const int MaxRecords = 10;
+        private const string RecordsFileName = "records.txt";
 
         private const int ScreenWidth = MapWidth * 3;
         private const int ScreenHeight = MapHeight * 3;
@@ -28,13 +30,16 @@ namespace Zmeika2
 
         static void Main()
         {
-            ConsoleKeyInfo keyInfo;
-            int selectedItem = 0;
-            bool isPlaying = false;
-
             SetWindowSize(ScreenWidth, ScreenHeight);
             SetBufferSize(ScreenWidth, ScreenHeight);
             CursorVisible = false;
+
+            List<string> records = ReadRecords(RecordsFileName);
+            records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
+
+            ConsoleKeyInfo keyInfo;
+            int selectedItem = 0;
+            bool isPlaying = false;
 
             while (true)
             {
@@ -43,7 +48,17 @@ namespace Zmeika2
                 if (isPlaying)
                 {
                     string playerName = GetPlayerName();
-                    StartGame(playerName);
+                    int score = StartGame();
+                    records.Add($"{playerName} {score}");
+                    records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
+
+                    if (records.Count > MaxRecords)
+                    {
+                        records.RemoveAt(records.Count - 1);
+                    }
+
+                    WriteRecords(RecordsFileName, records);
+
                     isPlaying = false;
                 }
                 else
@@ -86,25 +101,18 @@ namespace Zmeika2
                         }
                         else if (selectedItem == 2)
                         {
-                            DisplayLeaderboard();
+                            ShowRecords(records);
+                            selectedItem = 0;
                         }
                     }
                 }
             }
         }
 
-        static string GetPlayerName()
-        {
-            Console.Clear();
-            Console.Write("Введите свое имя: ");
-            return Console.ReadLine();
-        }
-
-        static void StartGame(string playerName)
+        static int StartGame()
         {
             int score = 0;
             bool isGameOver = false;
-            bool isPaused = false;
 
             Clear();
             DrawBoard();
@@ -116,13 +124,9 @@ namespace Zmeika2
 
             Direction currentMovement = Direction.Right;
 
+
             int lagMs = 0;
             var sw = new Stopwatch();
-
-            int topOffset = 7; // Отступ сверху для заголовка и счета
-
-            int bottomRow = ScreenHeight - 1 - topOffset;
-            int continueGameRow = topOffset + 1; // Строка "Продолжить игру" в главном меню
 
             while (!isGameOver)
             {
@@ -133,54 +137,8 @@ namespace Zmeika2
                 {
                     if (currentMovement == oldMovement)
                     {
-                        if (!isPaused)
-                        {
-                            currentMovement = ReadMovement(currentMovement);
-                        }
-                        else
-                        {
-                            SetCursorPosition((ScreenWidth - 19) / 2, continueGameRow);
-                            WriteLine("                  "); // Очистить строку "Продолжить игру"
-                        }
+                        currentMovement = ReadMovement(currentMovement);
                     }
-
-                    if (KeyAvailable)
-                    {
-                        ConsoleKeyInfo keyInfo = ReadKey(true);
-
-                        if (keyInfo.Key == ConsoleKey.Escape)
-                        {
-                            if (isPaused)
-                            {
-                                isPaused = false;
-                                DrawBoard();
-                            }
-                            else
-                            {
-                                isGameOver = true;
-                            }
-                        }
-                        else if (keyInfo.Key == ConsoleKey.P)
-                        {
-                            isPaused = !isPaused;
-
-                            if (isPaused)
-                            {
-                                SetCursorPosition((ScreenWidth - 19) / 2, continueGameRow);
-                                WriteLine("Продолжить игру");
-                            }
-                            else
-                            {
-                                SetCursorPosition((ScreenWidth - 19) / 2, continueGameRow);
-                                WriteLine("                  "); // Очистить строку "Продолжить игру"
-                            }
-                        }
-                    }
-                }
-
-                if (isPaused)
-                {
-                    continue; // Игра на паузе, пропустить кадр
                 }
 
                 sw.Restart();
@@ -222,29 +180,7 @@ namespace Zmeika2
                 }
             }
 
-            string[] title = new string[]
-            {
-        "  ▄▄ •  ▄▄▄· • ▌ ▄ ·. ▄▄▄ .         ▌ ▐·▄▄▄ .▄▄▄  ",
-        " ▐█ ▀ ▪▐█ ▀█ ·██ ▐███▪▀▄.▀·   ▄█▀▄ ▪█·█▌▀▄.▀·▀▄ █·",
-        " ▄█ ▀█▄▄█▀▀█ ▐█ ▌▐▌▐█·▐▀▀▪▄  ▐█▌.▐▌▐█▐█•▐▀▀▪▄▐▀▀▄ ",
-        " ▐█▄▪▐█▐█▪ ▐▌██ ██▌▐█▌▐█▄▄▌  ▐█▌.▐▌ ███ ▐█▄▄▌▐█•█▌",
-        "  ·▀▀▀▀  ▀  ▀ ▀▀  █▪▀▀▀ ▀▀▀    ▀█▄▀▪. ▀   ▀▀▀ .▀  ▀"
-            };
-
-            for (int i = 0; i < title.Length; i++)
-            {
-                SetCursorPosition((ScreenWidth - title[i].Length) / 2, i + topOffset);
-                WriteLine(title[i]);
-            }
-
-            SetCursorPosition((ScreenWidth - 16) / 2, topOffset + title.Length + 1);
-            WriteLine($"Score: {score}");
-
-            // Сохранить результат в таблицу рекордов
-            SavePlayerResult(playerName, score);
-
-            SetCursorPosition((ScreenWidth - 32) / 2, topOffset + title.Length + 3);
-            WriteLine("Нажмите Enter, чтобы вернуться в главное меню.");
+            ShowGameOver(score);
 
             while (true)
             {
@@ -252,47 +188,45 @@ namespace Zmeika2
                 if (keyInfo.Key == ConsoleKey.Enter)
                     break;
             }
+
+            return score;
         }
 
-        static void SavePlayerResult(string playerName, int score)
+        static void ShowGameOver(int score)
         {
-            string playerData = $"{playerName}: {score}";
-            File.AppendAllLines("leaderboard.txt", new[] { playerData });
-        }
+            Clear();
 
-        static void DisplayLeaderboard()
-        {
-            Console.Clear();
-            Console.WriteLine("Таблица рекордов:");
-
-            // Прочитать данные из файла и вывести на экран
-            if (File.Exists("leaderboard.txt"))
+            string[] gameOverText = new string[]
             {
-                string[] leaderboardData = File.ReadAllLines("leaderboard.txt");
-                var leaderboard = new List<KeyValuePair<string, int>>();
+                "  ▄▄ •  ▄▄▄· • ▌ ▄ ·. ▄▄▄ .         ▌ ▐·▄▄▄ .▄▄▄  ",
+                " ▐█ ▀ ▪▐█ ▀█ ·██ ▐███▪▀▄.▀·   ▄█▀▄ ▪█·█▌▀▄.▀·▀▄ █·",
+                " ▄█ ▀█▄▄█▀▀█ ▐█ ▌▐▌▐█·▐▀▀▪▄  ▐█▌.▐▌▐█▐█•▐▀▀▪▄▐▀▀▄ ",
+                " ▐█▄▪▐█▐█▪ ▐▌██ ██▌▐█▌▐█▄▄▌  ▐█▌.▐▌ ███ ▐█▄▄▌▐█•█▌",
+                "  ·▀▀▀▀  ▀  ▀ ▀▀  █▪▀▀▀ ▀▀▀    ▀█▄▀▪. ▀   ▀▀▀ .▀  ▀"
+            };
 
-                foreach (var entry in leaderboardData)
-                {
-                    string[] parts = entry.Split(':');
-                    if (parts.Length == 2 && int.TryParse(parts[1].Trim(), out int score))
-                    {
-                        leaderboard.Add(new KeyValuePair<string, int>(parts[0].Trim(), score));
-                    }
-                }
-
-                // Сортируем таблицу рекордов
-                leaderboard.Sort((a, b) => b.Value.CompareTo(a.Value));
-
-                int rank = 1;
-                foreach (var entry in leaderboard.Take(10))
-                {
-                    Console.WriteLine($"{rank}. {entry.Key}: {entry.Value}");
-                    rank++;
-                }
+            for (int i = 0; i < gameOverText.Length; i++)
+            {
+                SetCursorPosition(1, i);
+                WriteLine(gameOverText[i]);
             }
 
-            Console.WriteLine("\nНажмите Enter, чтобы вернуться в главное меню.");
-            while (Console.ReadKey().Key != ConsoleKey.Enter) { }
+            SetCursorPosition(1, gameOverText.Length + 2);
+            WriteLine($"Your score: {score}");
+
+            SetCursorPosition(1, gameOverText.Length + 4);
+            WriteLine("Press Enter to return to the main menu.");
+        }
+
+        static string GetPlayerName()
+        {
+            Clear();
+
+            string playerName = "";
+            Write("Введите ваш ник: ");
+            playerName = ReadLine();
+
+            return playerName;
         }
 
         static void DrawBoard()
@@ -323,6 +257,9 @@ namespace Zmeika2
             return food;
         }
 
+        static Direction TargetDirection;
+
+
         static Direction ReadMovement(Direction currentDirection)
         {
             if (!KeyAvailable)
@@ -342,135 +279,44 @@ namespace Zmeika2
 
             return currentDirection;
         }
-    }
 
-    public enum Direction
-    {
-        Up,
-        Down,
-        Right,
-        Left
-    }
-
-    public readonly struct Pixel
-    {
-        private const char PixelChar = '█';
-
-        public Pixel(int x, int y, ConsoleColor color, int pixelSize = 3)
+        static List<string> ReadRecords(string fileName)
         {
-            X = x;
-            Y = y;
-            Color = color;
-            PixelSize = pixelSize;
-        }
+            List<string> records = new List<string>();
 
-        public int X { get; }
-
-        public int Y { get; }
-
-        public ConsoleColor Color { get; }
-
-        public int PixelSize { get; }
-
-        public void Draw()
-        {
-            ForegroundColor = Color;
-            for (int x = 0; x < PixelSize; x++)
+            if (File.Exists(fileName))
             {
-                for (int y = 0; y < PixelSize; y++)
-                {
-                    SetCursorPosition(X * PixelSize + x, Y * PixelSize + y);
-                    Write(PixelChar);
-                }
-            }
-        }
-
-        public void Clear()
-        {
-            for (int x = 0; x < PixelSize; x++)
-            {
-                for (int y = 0; y < PixelSize; y++)
-                {
-                    SetCursorPosition(X * PixelSize + x, Y * PixelSize + y);
-                    Write(' ');
-                }
-            }
-        }
-    }
-
-    public class Snake
-    {
-        private readonly ConsoleColor _headColor;
-        private readonly ConsoleColor _bodyColor;
-
-        public Snake(int initialX,
-            int initialY,
-            ConsoleColor headColor,
-            ConsoleColor bodyColor,
-            int bodyLength = 3)
-        {
-            _headColor = headColor;
-            _bodyColor = bodyColor;
-
-            Head = new Pixel(initialX, initialY, headColor);
-
-            for (int i = bodyLength; i >= 0; i--)
-            {
-                Body.Enqueue(new Pixel(Head.X - i - 1, initialY, _bodyColor));
+                records = File.ReadAllLines(fileName).ToList();
             }
 
-            Draw();
+            return records;
         }
 
-        public Pixel Head { get; private set; }
-        public Queue<Pixel> Body { get; } = new Queue<Pixel>();
+        static void WriteRecords(string fileName, List<string> records)
+        {
+            File.WriteAllLines(fileName, records);
+        }
 
-        public void Move(Direction direction, bool eat = false)
+        static void ShowRecords(List<string> records)
         {
             Clear();
 
-            Body.Enqueue(new Pixel(Head.X, Head.Y, _bodyColor));
-            if (!eat)
-                Body.Dequeue();
+            WriteLine("Таблица рекордов:");
 
-            if (direction == Direction.Right)
+            for (int i = 0; i < records.Count; i++)
             {
-                Head = new Pixel(Head.X + 1, Head.Y, _headColor);
-            }
-            else if (direction == Direction.Left)
-            {
-                Head = new Pixel(Head.X - 1, Head.Y, _headColor);
-            }
-            else if (direction == Direction.Up)
-            {
-                Head = new Pixel(Head.X, Head.Y - 1, _headColor);
-            }
-            else if (direction == Direction.Down)
-            {
-                Head = new Pixel(Head.X, Head.Y + 1, _headColor);
+                if (i >= MaxRecords)
+                {
+                    break;
+                }
+
+                string[] record = records[i].Split(' ');
+                WriteLine($"{i + 1}. {record[0]}: {record[1]}");
             }
 
-            Draw();
-        }
-
-        public void Draw()
-        {
-            Head.Draw();
-
-            foreach (Pixel pixel in Body)
-            {
-                pixel.Draw();
-            }
-        }
-
-        public void Clear()
-        {
-            Head.Clear();
-
-            foreach (Pixel pixel in Body)
-            {
-                pixel.Clear();
-            }
+            WriteLine("\nНажмите Enter, чтобы вернуться в главное меню.");
+            ReadKey();
         }
     }
+
 }
