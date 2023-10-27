@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +26,7 @@ namespace Zmeika2
 
         private static readonly Random Random = new Random();
 
+
         static void Main()
         {
             ConsoleKeyInfo keyInfo;
@@ -41,7 +43,8 @@ namespace Zmeika2
 
                 if (isPlaying)
                 {
-                    StartGame();
+                    string playerName = GetPlayerName();
+                    StartGame(playerName);
                     isPlaying = false;
                 }
                 else
@@ -82,14 +85,27 @@ namespace Zmeika2
                         {
                             isPlaying = true;
                         }
+                        else if (selectedItem == 2)
+                        {
+                            DisplayLeaderboard();
+                        }
                     }
                 }
             }
         }
 
-        static void StartGame()
+        static string GetPlayerName()
+        {
+            Console.Clear();
+            Console.Write("Введите свое имя: ");
+            return Console.ReadLine();
+        }
+
+        static void StartGame(string playerName)
         {
             int score = 0;
+            bool isGameOver = false;
+            bool isPaused = false;
 
             Clear();
             DrawBoard();
@@ -104,11 +120,7 @@ namespace Zmeika2
             int lagMs = 0;
             var sw = new Stopwatch();
 
-            int bottomRow = ScreenHeight - 1;
-            SetCursorPosition(ScreenWidth / 3, bottomRow);
-            Write($"Score: {score}");
-
-            while (true)
+            while (!isGameOver)
             {
                 sw.Restart();
                 Direction oldMovement = currentMovement;
@@ -116,7 +128,39 @@ namespace Zmeika2
                 while (sw.ElapsedMilliseconds <= FrameMilliseconds - lagMs)
                 {
                     if (currentMovement == oldMovement)
-                        currentMovement = ReadMovement(currentMovement);
+                    {
+                        if (!isPaused)
+                        {
+                            currentMovement = ReadMovement(currentMovement);
+                        }
+                    }
+
+                    if (KeyAvailable)
+                    {
+                        ConsoleKeyInfo keyInfo = ReadKey(true);
+
+                        if (keyInfo.Key == ConsoleKey.Escape)
+                        {
+                            if (isPaused)
+                            {
+                                isPaused = false;
+                                DrawBoard();
+                            }
+                            else
+                            {
+                                isGameOver = true;
+                            }
+                        }
+                        else if (keyInfo.Key == ConsoleKey.P)
+                        {
+                            isPaused = !isPaused;
+                        }
+                    }
+                }
+
+                if (isPaused)
+                {
+                    continue; // Игра на паузе, пропустить кадр
                 }
 
                 sw.Restart();
@@ -128,9 +172,6 @@ namespace Zmeika2
                     food.Draw();
 
                     score++;
-
-                    SetCursorPosition(ScreenWidth / 3, bottomRow);
-                    Write($"Score: {score}");
                 }
                 else
                 {
@@ -142,7 +183,9 @@ namespace Zmeika2
                     || snake.Head.Y == MapHeight - 1
                     || snake.Head.Y == 0
                     || snake.Body.Any(b => b.X == snake.Head.X && b.Y == snake.Head.Y))
-                    break;
+                {
+                    isGameOver = true;
+                }
 
                 lagMs = (int)sw.ElapsedMilliseconds;
             }
@@ -150,16 +193,85 @@ namespace Zmeika2
             snake.Clear();
             food.Clear();
 
+            for (int i = 1; i < MapWidth - 1; i++)
+            {
+                for (int j = 1; j < MapHeight - 1; j++)
+                {
+                    SetCursorPosition(i * 3, j);
+                    Write(" ");
+                }
+            }
 
-            if (Console.WindowHeight > bottomRow + 1)
+            string[] title = new string[]
             {
-                SetCursorPosition(ScreenWidth / 3, bottomRow + 1);
-                WriteLine("Game over, press any key to continue.");
-            }
-            else
+        "  ▄▄ •  ▄▄▄· • ▌ ▄ ·. ▄▄▄ .         ▌ ▐·▄▄▄ .▄▄▄  ",
+        " ▐█ ▀ ▪▐█ ▀█ ·██ ▐███▪▀▄.▀·   ▄█▀▄ ▪█·█▌▀▄.▀·▀▄ █·",
+        " ▄█ ▀█▄▄█▀▀█ ▐█ ▌▐▌▐█·▐▀▀▪▄  ▐█▌.▐▌▐█▐█•▐▀▀▪▄▐▀▀▄ ",
+        " ▐█▄▪▐█▐█▪ ▐▌██ ██▌▐█▌▐█▄▄▌  ▐█▌.▐▌ ███ ▐█▄▄▌▐█•█▌",
+        "  ·▀▀▀▀  ▀  ▀ ▀▀  █▪▀▀▀ ▀▀▀    ▀█▄▀▪. ▀   ▀▀▀ .▀  ▀"
+            };
+
+            for (int i = 0; i < title.Length; i++)
             {
-                WriteLine("Game over, press any key to continue.");
+                SetCursorPosition(1, i);
+                WriteLine(title[i]);
             }
+
+            SetCursorPosition(1, title.Length);
+            WriteLine($"Score: {score}");
+
+            SavePlayerResult(playerName, score);
+
+            SetCursorPosition(1, title.Length + 2);
+            WriteLine("Press Enter to return to the main menu.");
+
+            while (true)
+            {
+                var keyInfo = ReadKey(true);
+                if (keyInfo.Key == ConsoleKey.Enter)
+                    break;
+            }
+        }
+
+        static void SavePlayerResult(string playerName, int score)
+        {
+            string playerData = $"{playerName}: {score}";
+            File.AppendAllLines("leaderboard.txt", new[] { playerData });
+        }
+
+        static void DisplayLeaderboard()
+        {
+            Console.Clear();
+            Console.WriteLine("Таблица рекордов:");
+
+            // Прочитать данные из файла и вывести на экран
+            if (File.Exists("leaderboard.txt"))
+            {
+                string[] leaderboardData = File.ReadAllLines("leaderboard.txt");
+                var leaderboard = new List<KeyValuePair<string, int>>();
+
+                foreach (var entry in leaderboardData)
+                {
+                    string[] parts = entry.Split(':');
+                    if (parts.Length == 2 && int.TryParse(parts[1].Trim(), out int score))
+                    {
+                        leaderboard.Add(new KeyValuePair<string, int>(parts[0].Trim(), score));
+                    }
+                }
+
+                // Сортируем таблицу рекордов
+                leaderboard.Sort((a, b) => b.Value.CompareTo(a.Value));
+
+                int rank = 1;
+                foreach (var entry in leaderboard.Take(10))
+                {
+                    Console.WriteLine($"{rank}. {entry.Key}: {entry.Value}");
+                    rank++;
+                }
+            }
+
+            Console.WriteLine("\nНажмите Enter, чтобы вернуться в главное меню.");
+            while (Console.ReadKey().Key != ConsoleKey.Enter) { }
         }
 
         static void DrawBoard()
