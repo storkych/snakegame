@@ -32,6 +32,7 @@ namespace SnakeGame
 
         public Pixel Head { get; private set; }
         public Queue<Pixel> Body { get; } = new Queue<Pixel>();
+        public object Name { get; internal set; }
 
         public void Move(Direction direction, bool eat = false)
         {

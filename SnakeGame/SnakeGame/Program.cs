@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using static System.Console;
 
@@ -28,86 +29,148 @@ namespace SnakeGame
 
         private static readonly Random Random = new Random();
 
-        static void Main()
+        private static CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        private static Task inputTask;
+
+        public static int GameState = 0; // 0 - Меню, 1 - Игра, 2 - экран смерти, 3 - экран паузы
+
+        static async Task Main(string[] args)
         {
-            SetWindowSize(ScreenWidth, ScreenHeight);
-            SetBufferSize(ScreenWidth, ScreenHeight);
-            CursorVisible = false;
-
-            List<string> records = ReadRecords(RecordsFileName);
-            records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
-
-            ConsoleKeyInfo keyInfo;
-            int selectedItem = 0;
-            bool isPlaying = false;
-
-            while (true)
+            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource())
             {
-                Clear();
+                Task inputTask = HandleInputAsync(cancellationTokenSource.Token);
+                bool isPlaying = false;
+                Direction snakeDirection = Direction.Right;
+                bool exitRequested = false;
 
-                if (isPlaying)
+                SetWindowSize(ScreenWidth, ScreenHeight);
+                SetBufferSize(ScreenWidth, ScreenHeight);
+                CursorVisible = false;
+
+                List<string> records = ReadRecords(RecordsFileName);
+                records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
+
+                ConsoleKeyInfo keyInfo;
+                int selectedItem = 0;
+
+                while (!exitRequested)
                 {
-                    string playerName = GetPlayerName();
-                    int score = StartGame();
-                    records.Add($"{playerName} {score}");
-                    records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
+                    Clear();
 
-                    if (records.Count > MaxRecords)
+                    if (isPlaying)
                     {
-                        records.RemoveAt(records.Count - 1);
+                        string playerName = GetPlayerName();
+                        int score = StartGame();
+                        records.Add($"{playerName} {score}");
+                        records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
+
+                        if (records.Count > MaxRecords)
+                        {
+                            records.RemoveAt(records.Count - 1);
+                        }
+
+                        WriteRecords(RecordsFileName, records);
+
+                        isPlaying = false;
+                    }
+                    else
+                    {
+                        string[] menuItems = { "Продолжить", "Новая игра", "Таблица рекордов", "Выход" };
+
+                        for (int i = 0; i < menuItems.Length; i++)
+                        {
+                            if (i == selectedItem)
+                            {
+                                ForegroundColor = ConsoleColor.White;
+                            }
+                            else
+                            {
+                                ForegroundColor = ConsoleColor.Gray;
+                            }
+
+                            WriteLine((i == selectedItem ? ">> " : "   ") + menuItems[i]);
+                        }
+
+                        keyInfo = ReadKey(true);
+
+                        if (keyInfo.Key == ConsoleKey.W && selectedItem > 0)
+                        {
+                            selectedItem--;
+                        }
+                        else if (keyInfo.Key == ConsoleKey.S && selectedItem < menuItems.Length - 1)
+                        {
+                            selectedItem++;
+                        }
+                        else if (keyInfo.Key == ConsoleKey.Enter)
+                        {
+                            if (selectedItem == 3)
+                            {
+                                exitRequested = true; // Устанавливаем флаг выхода
+                                cancellationTokenSource.Cancel(); // Отменяем ввод
+                            }
+                            else if (selectedItem == 1)
+                            {
+                                isPlaying = true;
+                            }
+                            else if (selectedItem == 2)
+                            {
+                                ShowRecords(records);
+                                selectedItem = 0;
+                            }
+                        }
                     }
 
-                    WriteRecords(RecordsFileName, records);
-
-                    isPlaying = false;
+                    await Task.Delay(1); // Добавляем задержку
                 }
-                else
-                {
-                    string[] menuItems = { "Продолжить", "Новая игра", "Таблица рекордов", "Выход" };
 
-                    for (int i = 0; i < menuItems.Length; i++)
-                    {
-                        if (i == selectedItem)
-                        {
-                            ForegroundColor = ConsoleColor.White;
-                        }
-                        else
-                        {
-                            ForegroundColor = ConsoleColor.Gray;
-                        }
-
-                        WriteLine((i == selectedItem ? ">> " : "   ") + menuItems[i]);
-                    }
-
-                    keyInfo = ReadKey(true);
-
-                    if (keyInfo.Key == ConsoleKey.W && selectedItem > 0)
-                    {
-                        selectedItem--;
-                    }
-                    else if (keyInfo.Key == ConsoleKey.S && selectedItem < menuItems.Length - 1)
-                    {
-                        selectedItem++;
-                    }
-                    else if (keyInfo.Key == ConsoleKey.Enter)
-                    {
-                        if (selectedItem == 3)
-                        {
-                            break;
-                        }
-                        else if (selectedItem == 1)
-                        {
-                            isPlaying = true;
-                        }
-                        else if (selectedItem == 2)
-                        {
-                            ShowRecords(records);
-                            selectedItem = 0;
-                        }
-                    }
-                }
+                // Ожидаем завершения обработки ввода
+                await inputTask;
             }
         }
+
+
+
+
+        private static Direction SnakeDir = Direction.Right;
+
+        static Direction ReadMovement()
+        {
+            return SnakeDir;
+        }
+
+        static async Task HandleInputAsync(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                if (Console.KeyAvailable)
+                {
+                    var key = Console.ReadKey(intercept: true).Key;
+
+                    if (key == ConsoleKey.Escape)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested(); // Выбрасывает исключение при отмене
+                    }
+                    else if (key == ConsoleKey.W)
+                    {
+                        if (SnakeDir != Direction.Down) { SnakeDir = Direction.Up; }
+                    }
+                    else if (key == ConsoleKey.S)
+                    {
+                        if (SnakeDir != Direction.Up) { SnakeDir = Direction.Down; }
+                    }
+                    else if (key == ConsoleKey.A)
+                    {
+                        if (SnakeDir != Direction.Right) { SnakeDir = Direction.Left; }
+                    }
+                    else if (key == ConsoleKey.D)
+                    {
+                        if (SnakeDir != Direction.Left) { SnakeDir = Direction.Right; }
+                    }
+                }
+                await Task.Delay(10);
+            }
+        }
+
 
         static int StartGame()
         {
@@ -137,7 +200,7 @@ namespace SnakeGame
                 {
                     if (currentMovement == oldMovement)
                     {
-                        currentMovement = ReadMovement(currentMovement);
+                        currentMovement = ReadMovement();
                     }
                 }
 
@@ -257,28 +320,7 @@ namespace SnakeGame
             return food;
         }
 
-        static Direction TargetDirection;
 
-
-        static Direction ReadMovement(Direction currentDirection)
-        {
-            if (!KeyAvailable)
-                return currentDirection;
-
-            ConsoleKeyInfo keyInfo = ReadKey(true);
-            ConsoleKey key = keyInfo.Key;
-
-            if (key == ConsoleKey.W && currentDirection != Direction.Down)
-                return Direction.Up;
-            if (key == ConsoleKey.S && currentDirection != Direction.Up)
-                return Direction.Down;
-            if (key == ConsoleKey.A && currentDirection != Direction.Right)
-                return Direction.Left;
-            if (key == ConsoleKey.D && currentDirection != Direction.Left)
-                return Direction.Right;
-
-            return currentDirection;
-        }
 
         static List<string> ReadRecords(string fileName)
         {
