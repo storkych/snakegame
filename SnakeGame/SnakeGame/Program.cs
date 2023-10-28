@@ -34,7 +34,6 @@ namespace SnakeGame
         private static GameState gameState = GameState.MainMenu;
 
 
-
         static GameStateData gameStateData = new GameStateData();
 
 
@@ -180,10 +179,10 @@ namespace SnakeGame
                             }
 
                             SetCursorPosition(1, gameOverText.Length + 2);
-                            WriteLine($"Your score: {match.Score}");
+                            WriteLine($"Ваши очки: {match.Score}");
 
                             SetCursorPosition(1, gameOverText.Length + 4);
-                            WriteLine("Press Enter to return to the main menu.");
+                            WriteLine("Нажмите Enter чтобы вернуться в главное меню.");
                             while (true)
                             {
                                 var keyInafo = ReadKey(true);
@@ -246,7 +245,7 @@ namespace SnakeGame
                                 {
                                     string gameStateJson = JsonConvert.SerializeObject(gameStateData);
                                     File.WriteAllText(FILE_NAME, gameStateJson);
-                                    Write("Save complete");
+                                    Write("Сохранение произошло");
                                 }
                             }
                             break;
