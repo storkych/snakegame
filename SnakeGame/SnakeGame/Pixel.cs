@@ -6,7 +6,7 @@ namespace SnakeGame
 {
     public readonly struct Pixel
     {
-        private const char PixelChar = '█';
+        private const char PIXEL_CHAR = '█';
 
         public Pixel(int x, int y, ConsoleColor color, int pixelSize = 3)
         {
@@ -32,7 +32,7 @@ namespace SnakeGame
                 for (int y = 0; y < PixelSize; y++)
                 {
                     SetCursorPosition(X * PixelSize + x, Y * PixelSize + y);
-                    Write(PixelChar);
+                    Write(PIXEL_CHAR);
                 }
             }
         }

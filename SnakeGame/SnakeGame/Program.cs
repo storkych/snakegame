@@ -13,21 +13,21 @@ namespace SnakeGame
 {
     class Program
     {
-        private const int MapWidth = 30;
-        private const int MapHeight = 20;
-        private const int MaxRecords = 10;
-        private const string RecordsFileName = "records.txt";
-        private const string fileName = "gameState.json";
+        private const int MAP_WIDTH = 30;
+        private const int MAP_HEIGHT = 20;
+        private const int MAX_RECORDS = 10;
+        private const string RECORDS_FILE_NAME = "records.txt";
+        private const string FILE_NAME = "gameState.json";
 
-        private const int ScreenWidth = MapWidth * 3;
-        private const int ScreenHeight = MapHeight * 3;
+        private const int SCREEN_WIDTH = MAP_WIDTH * 3;
+        private const int SCREEN_HEIGHT = MAP_HEIGHT * 3;
 
-        private const int FrameMilliseconds = 200;
+        private const int FRAME_MILLISECONDS = 200;
 
-        private const ConsoleColor BorderColor = ConsoleColor.White;
-        private const ConsoleColor FoodColor = ConsoleColor.Green;
-        private const ConsoleColor BodyColor = ConsoleColor.White;
-        private const ConsoleColor HeadColor = ConsoleColor.DarkGray;
+        private const ConsoleColor BORDER_COLOR = ConsoleColor.White;
+        private const ConsoleColor FOOD_COLOR = ConsoleColor.Green;
+        private const ConsoleColor BODY_COLOR = ConsoleColor.White;
+        private const ConsoleColor HEAD_COLOR = ConsoleColor.DarkGray;
 
         private static readonly Random Random = new Random();
 
@@ -52,11 +52,11 @@ namespace SnakeGame
 
                 LoadData();
 
-                SetWindowSize(ScreenWidth, ScreenHeight + 5);
-                SetBufferSize(ScreenWidth, ScreenHeight + 5);
+                SetWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT + 5);
+                SetBufferSize(SCREEN_WIDTH, SCREEN_HEIGHT + 5);
                 CursorVisible = false;
                 
-                List<string> records = ReadRecords(RecordsFileName);
+                List<string> records = ReadRecords(RECORDS_FILE_NAME);
                 records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
 
                 ConsoleKeyInfo keyInfo;
@@ -127,7 +127,7 @@ namespace SnakeGame
                                     gameState = GameState.InGame;
                                     gameStateData = new GameStateData();
                                     string gameStateJson = JsonConvert.SerializeObject(gameStateData);
-                                    File.WriteAllText(fileName, gameStateJson);
+                                    File.WriteAllText(FILE_NAME, gameStateJson);
                                 }
                                 else if (selectedItem == 2)
                                 {
@@ -152,12 +152,12 @@ namespace SnakeGame
                             records.Add($"{match.PlayerName} {match.Score}");
                             records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
 
-                            if (records.Count > MaxRecords)
+                            if (records.Count > MAX_RECORDS)
                             {
                                 records.RemoveAt(records.Count - 1);
                             }
 
-                            WriteRecords(RecordsFileName, records);
+                            WriteRecords(RECORDS_FILE_NAME, records);
 
                             string[] gameOverText = new string[]
                             {
@@ -240,7 +240,7 @@ namespace SnakeGame
                                 else if (selectedItem == 1)
                                 {
                                     string gameStateJson = JsonConvert.SerializeObject(gameStateData);
-                                    File.WriteAllText(fileName, gameStateJson);
+                                    File.WriteAllText(FILE_NAME, gameStateJson);
                                     Write("Save complete");
                                 }
                             }
@@ -257,9 +257,9 @@ namespace SnakeGame
 
         private static void LoadData()
         {
-            if (File.Exists(fileName))
+            if (File.Exists(FILE_NAME))
             {
-                string json = File.ReadAllText(fileName); // Чтение JSON из файла
+                string json = File.ReadAllText(FILE_NAME); // Чтение JSON из файла
                 gameStateData = JsonConvert.DeserializeObject<GameStateData>(json);
             }
             else
@@ -336,7 +336,7 @@ namespace SnakeGame
 
                 playerName = GetPlayerName();
 
-                snake = new Snake(10, 5, HeadColor, BodyColor);
+                snake = new Snake(10, 5, HEAD_COLOR, BODY_COLOR);
                 food = GenFood(snake);
             }
             else
@@ -357,17 +357,17 @@ namespace SnakeGame
             var sw = new Stopwatch();
 
             string infoText = $"| Текущий счёт: {score} |";
-            int x = (ScreenWidth - infoText.Length) / 2;
-            SetCursorPosition((ScreenWidth - playerName.Length)/2, ScreenHeight + 1);
+            int x = (SCREEN_WIDTH - infoText.Length) / 2;
+            SetCursorPosition((SCREEN_WIDTH - playerName.Length)/2, SCREEN_HEIGHT + 1);
             Write($"{playerName}");
-            SetCursorPosition((ScreenWidth - 15) / 2, ScreenHeight + 3);
+            SetCursorPosition((SCREEN_WIDTH - 15) / 2, SCREEN_HEIGHT + 3);
             Write($"| ESC - Пауза |");
             while (!isGameOver && !pauseRequested)
             {
                 SetCursorPosition(0, 0);
 
                 // Очистка предыдущей строки
-                Write(new string(' ', ScreenWidth));
+                Write(new string(' ', SCREEN_WIDTH));
                 SetCursorPosition(x, 1);
                 // Вывод строки с информацией
                 Write($"| Текущий счёт: {score} |");
@@ -375,7 +375,7 @@ namespace SnakeGame
                 sw.Restart();
                 Direction oldMovement = currentMovement;
 
-                while (sw.ElapsedMilliseconds <= FrameMilliseconds - lagMs)
+                while (sw.ElapsedMilliseconds <= FRAME_MILLISECONDS - lagMs)
                 {
                     if (currentMovement == oldMovement)
                     {
@@ -398,9 +398,9 @@ namespace SnakeGame
                     snake.Move(currentMovement);
                 }
 
-                if (snake.Head.X == MapWidth - 1
+                if (snake.Head.X == MAP_WIDTH - 1
                     || snake.Head.X == 0
-                    || snake.Head.Y == MapHeight - 1
+                    || snake.Head.Y == MAP_HEIGHT - 1
                     || snake.Head.Y == 0
                     || snake.Body.Any(b => b.X == snake.Head.X && b.Y == snake.Head.Y))
                 {
@@ -424,9 +424,9 @@ namespace SnakeGame
             else
             {
                 gameStateData = new GameStateData();
-                for (int i = 1; i < MapWidth - 1; i++)
+                for (int i = 1; i < MAP_WIDTH - 1; i++)
                 {
-                    for (int j = 1; j < MapHeight - 1; j++)
+                    for (int j = 1; j < MAP_HEIGHT - 1; j++)
                     {
                         SetCursorPosition(i * 3, j);
                         Write(" ");
@@ -450,16 +450,16 @@ namespace SnakeGame
 
         static void DrawBoard()
         {
-            for (int i = 0; i < MapWidth; i++)
+            for (int i = 0; i < MAP_WIDTH; i++)
             {
-                new Pixel(i, 0, BorderColor).Draw();
-                new Pixel(i, MapHeight - 1, BorderColor).Draw();
+                new Pixel(i, 0, BORDER_COLOR).Draw();
+                new Pixel(i, MAP_HEIGHT - 1, BORDER_COLOR).Draw();
             }
 
-            for (int i = 0; i < MapHeight; i++)
+            for (int i = 0; i < MAP_HEIGHT; i++)
             {
-                new Pixel(0, i, BorderColor).Draw();
-                new Pixel(MapWidth - 1, i, BorderColor).Draw();
+                new Pixel(0, i, BORDER_COLOR).Draw();
+                new Pixel(MAP_WIDTH - 1, i, BORDER_COLOR).Draw();
             }
         }
 
@@ -469,7 +469,7 @@ namespace SnakeGame
 
             do
             {
-                food = new Pixel(Random.Next(1, MapWidth - 2), Random.Next(1, MapHeight - 2), FoodColor);
+                food = new Pixel(Random.Next(1, MAP_WIDTH - 2), Random.Next(1, MAP_HEIGHT - 2), FOOD_COLOR);
             } while (snake.Head.X == food.X && snake.Head.Y == food.Y ||
                      snake.Body.Any(b => b.X == food.X && b.Y == food.Y));
 
@@ -477,21 +477,21 @@ namespace SnakeGame
         }
 
 
-        static List<string> ReadRecords(string fileName)
+        static List<string> ReadRecords(string FILE_NAME)
         {
             List<string> records = new List<string>();
 
-            if (File.Exists(fileName))
+            if (File.Exists(FILE_NAME))
             {
-                records = File.ReadAllLines(fileName).ToList();
+                records = File.ReadAllLines(FILE_NAME).ToList();
             }
 
             return records;
         }
 
-        static void WriteRecords(string fileName, List<string> records)
+        static void WriteRecords(string FILE_NAME, List<string> records)
         {
-            File.WriteAllLines(fileName, records);
+            File.WriteAllLines(FILE_NAME, records);
         }
 
         static void ShowRecords(List<string> records)
@@ -502,7 +502,7 @@ namespace SnakeGame
 
             for (int i = 0; i < records.Count; i++)
             {
-                if (i >= MaxRecords)
+                if (i >= MAX_RECORDS)
                 {
                     break;
                 }

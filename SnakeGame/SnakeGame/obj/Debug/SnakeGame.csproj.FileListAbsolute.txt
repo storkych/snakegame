@@ -22,3 +22,6 @@ D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGa
 C:\Users\storkych\Documents\GitHub\snakegame\SnakeGame\SnakeGame\bin\Debug\Newtonsoft.Json.dll
 C:\Users\storkych\Documents\GitHub\snakegame\SnakeGame\SnakeGame\bin\Debug\Newtonsoft.Json.xml
 C:\Users\storkych\Documents\GitHub\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGame.csproj.CopyComplete
+D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\bin\Debug\Newtonsoft.Json.dll
+D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\bin\Debug\Newtonsoft.Json.xml
+D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGame.csproj.CopyComplete
