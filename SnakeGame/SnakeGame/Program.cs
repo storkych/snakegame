@@ -68,7 +68,14 @@ namespace SnakeGame
                     {
                         case GameState.MainMenu:
                             Clear();
-                            string[] menuItems = {"Новая игра", "Таблица рекордов", "Выход" };
+
+                            string[] menuItems = new string[] { "Продолжить игру", "Новая игра", "Таблица рекордов", "Выход" };
+
+                            if (gameStateData.Snake == null)
+                            {
+                                // Если сохраненной игры нет, "Продолжить игру" будет неактивным (серого цвета)
+                                menuItems[0] = "[Недоступно] Продолжить игру";
+                            }
 
                             for (int i = 0; i < menuItems.Length; i++)
                             {
@@ -78,7 +85,7 @@ namespace SnakeGame
                                 }
                                 else
                                 {
-                                    ForegroundColor = ConsoleColor.Gray;
+                                    ForegroundColor = i == 0 && gameStateData.Snake == null ? ConsoleColor.Gray : ConsoleColor.White;
                                 }
 
                                 WriteLine((i == selectedItem ? ">> " : "   ") + menuItems[i]);
@@ -96,16 +103,25 @@ namespace SnakeGame
                             }
                             else if (keyInfo.Key == ConsoleKey.Enter)
                             {
-                                if (selectedItem == 2)
+                                if (selectedItem == menuItems.Length - 1)
                                 {
                                     exitRequested = true; // Устанавливаем флаг выхода
                                     cancellationTokenSource.Cancel(); // Отменяем ввод
                                 }
-                                else if (selectedItem == 0)
+                                else if (selectedItem == 0 && gameStateData.Snake != null)
                                 {
+                                    // Обработка продолжения игры
                                     gameState = GameState.InGame;
                                 }
                                 else if (selectedItem == 1)
+                                {
+                                    // Обработка начала новой игры
+                                    gameState = GameState.InGame;
+                                    gameStateData = new GameStateData();
+                                    string gameStateJson = JsonConvert.SerializeObject(gameStateData);
+                                    File.WriteAllText(fileName, gameStateJson);
+                                }
+                                else if (selectedItem == 2)
                                 {
                                     ShowRecords(records);
                                     selectedItem = 0;
@@ -210,13 +226,6 @@ namespace SnakeGame
                                     string gameStateJson = JsonConvert.SerializeObject(gameStateData);
                                     File.WriteAllText(fileName, gameStateJson);
                                     Write("Save complete");
-                                    while (true)
-                                    {
-                                        var keyInafo = ReadKey(true);
-                                        if (keyInafo.Key == ConsoleKey.Enter)
-                                            gameState = GameState.MainMenu;
-                                        break;
-                                    }
                                 }
                             }
                             break;
