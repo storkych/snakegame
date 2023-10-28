@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using static System.Console;
 
 namespace SnakeGame
@@ -14,9 +15,9 @@ namespace SnakeGame
             Color = color;
             PixelSize = pixelSize;
         }
-
+        [JsonProperty]
         public int X { get; }
-
+        [JsonProperty]
         public int Y { get; }
 
         public ConsoleColor Color { get; }

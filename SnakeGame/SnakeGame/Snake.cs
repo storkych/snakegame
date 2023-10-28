@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace SnakeGame
 {
@@ -11,6 +12,19 @@ namespace SnakeGame
         private readonly ConsoleColor _headColor;
         private readonly ConsoleColor _bodyColor;
 
+        public Snake() {
+            _headColor = ConsoleColor.DarkGray;
+            _bodyColor = ConsoleColor.White;
+
+            Head = new Pixel(5, 5, _headColor);
+
+            for (int i = 3; i >= 0; i--)
+            {
+                Body.Enqueue(new Pixel(Head.X - i - 1, 5, _bodyColor));
+            }
+
+
+        }
         public Snake(int initialX,
             int initialY,
             ConsoleColor headColor,
@@ -29,10 +43,11 @@ namespace SnakeGame
 
             Draw();
         }
-
+        [JsonProperty]
         public Pixel Head { get; private set; }
+        [JsonProperty]
         public Queue<Pixel> Body { get; } = new Queue<Pixel>();
-        public object Name { get; internal set; }
+
 
         public void Move(Direction direction, bool eat = false)
         {

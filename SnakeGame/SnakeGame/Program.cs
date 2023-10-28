@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using static System.Console;
 
 namespace SnakeGame
@@ -16,6 +17,7 @@ namespace SnakeGame
         private const int MapHeight = 20;
         private const int MaxRecords = 10;
         private const string RecordsFileName = "records.txt";
+        private const string fileName = "gameState.json";
 
         private const int ScreenWidth = MapWidth * 3;
         private const int ScreenHeight = MapHeight * 3;
@@ -37,8 +39,9 @@ namespace SnakeGame
 
 
 
-        static async Task Main(string[] args)
+        static async Task Main()
         {
+
             using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource())
             {
                 Task inputTask = HandleInputAsync(cancellationTokenSource.Token);
@@ -47,10 +50,12 @@ namespace SnakeGame
 
                 bool exitRequested = false;
 
+                LoadData();
+
                 SetWindowSize(ScreenWidth, ScreenHeight + 5);
                 SetBufferSize(ScreenWidth, ScreenHeight + 5);
                 CursorVisible = false;
-
+                
                 List<string> records = ReadRecords(RecordsFileName);
                 records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
 
@@ -63,7 +68,6 @@ namespace SnakeGame
                     {
                         case GameState.MainMenu:
                             Clear();
-                            WriteLine("MAIN MENU");
                             string[] menuItems = {"Новая игра", "Таблица рекордов", "Выход" };
 
                             for (int i = 0; i < menuItems.Length; i++)
@@ -121,7 +125,7 @@ namespace SnakeGame
                         case GameState.GameOver:
                             Clear();
 
-                            records.Add($"{match.playerName} {match.Score}");
+                            records.Add($"{match.PlayerName} {match.Score}");
                             records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
 
                             if (records.Count > MaxRecords)
@@ -193,19 +197,26 @@ namespace SnakeGame
                             }
                             else if (keyInfo.Key == ConsoleKey.Enter)
                             {
-                                if (selectedItem == 3)
+                                if (selectedItem == 2)
                                 {
-                                    exitRequested = true; // Устанавливаем флаг выхода
-                                    cancellationTokenSource.Cancel(); // Отменяем ввод
+                                    gameState = GameState.MainMenu;
                                 }
                                 else if (selectedItem == 0)
                                 {
                                     gameState = GameState.InGame;
                                 }
-                                else if (selectedItem == 2)
+                                else if (selectedItem == 1)
                                 {
-                                    ShowRecords(records);
-                                    selectedItem = 0;
+                                    string gameStateJson = JsonConvert.SerializeObject(gameStateData);
+                                    File.WriteAllText(fileName, gameStateJson);
+                                    Write("Save complete");
+                                    while (true)
+                                    {
+                                        var keyInafo = ReadKey(true);
+                                        if (keyInafo.Key == ConsoleKey.Enter)
+                                            gameState = GameState.MainMenu;
+                                        break;
+                                    }
                                 }
                             }
                             break;
@@ -217,6 +228,12 @@ namespace SnakeGame
                 await inputTask;
             }
             
+        }
+
+        private static void LoadData()
+        {
+            string json = File.ReadAllText(fileName); // Чтение JSON из файла
+            gameStateData = JsonConvert.DeserializeObject<GameStateData>(json); 
         }
 
         enum GameState
@@ -271,6 +288,7 @@ namespace SnakeGame
 
         static GameStateData StartGame()
         {
+
             string playerName = "";
             bool isGameOver = false;
             
@@ -279,15 +297,18 @@ namespace SnakeGame
             int score = 0;
             GameStateData matchData = new GameStateData();
 
+
             if (gameStateData.Snake == null)
             {
+
                 playerName = GetPlayerName();
+
                 snake = new Snake(10, 5, HeadColor, BodyColor);
                 food = GenFood(snake);
             }
             else
             {
-                playerName = gameStateData.playerName;
+                playerName = gameStateData.PlayerName;
                 snake = gameStateData.Snake;
                 food = gameStateData.Food;
                 score = gameStateData.Score;
@@ -328,7 +349,7 @@ namespace SnakeGame
                         currentMovement = ReadMovement();
                     }
                 }
-
+                
                 sw.Restart();
 
                 if (snake.Head.X == food.X && snake.Head.Y == food.Y)
@@ -359,7 +380,7 @@ namespace SnakeGame
             matchData.Snake = snake;
             matchData.Food = food;
             matchData.Score = score;
-            matchData.playerName = playerName;
+            matchData.PlayerName = playerName;
 
             if (pauseRequested)
             {
@@ -390,12 +411,8 @@ namespace SnakeGame
         static string GetPlayerName()
         {
             Clear();
-
-            string playerName = "";
             Write("Введите ваш ник: ");
-            playerName = ReadLine();
-
-            return playerName;
+            return ReadLine();
         }
 
         static void DrawBoard()
@@ -465,12 +482,20 @@ namespace SnakeGame
             ReadKey();
         }
     }
+
+
+    [Serializable]
     public class GameStateData
     {
         public Snake Snake { get; set; }
         public Pixel Food { get; set; }
         public int Score { get; set; }
-        public string playerName { get; set; }
+        public string PlayerName { get; set; }
+
+        public GameStateData()
+        {
+            // Инициализация всех свойств, которые нужно сохранить
+        }
         // Другие параметры, которые вы хотите сохранить
     }
 
