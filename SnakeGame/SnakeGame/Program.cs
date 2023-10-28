@@ -84,7 +84,7 @@ namespace SnakeGame
 
                             if (gameStateData.Snake == null)
                             {
-                                // Если сохраненной игры нет, "Продолжить игру" будет неактивным (серого цвета)
+                                // Если сохраненной игры нет, "Продолжить игру" будет неактивным (серого цвета).
                                 menuItems[0] = "[Недоступно] Продолжить игру";
                             }
 
@@ -116,17 +116,19 @@ namespace SnakeGame
                             {
                                 if (selectedItem == menuItems.Length - 1)
                                 {
-                                    exitRequested = true; // Устанавливаем флаг выхода
-                                    cancellationTokenSource.Cancel(); // Отменяем ввод
+                                    // Устанавливаем флаг выхода.
+                                    exitRequested = true;
+                                    // Отменяем ввод.
+                                    cancellationTokenSource.Cancel(); 
                                 }
                                 else if ((selectedItem == 0) && (gameStateData.Snake != null))
                                 {
-                                    // Обработка продолжения игры
+                                    // Обработка продолжения игры.
                                     gameState = GameState.InGame;
                                 }
                                 else if (selectedItem == 1)
                                 {
-                                    // Обработка начала новой игры
+                                    // Обработка начала новой игры.
                                     gameState = GameState.InGame;
                                     gameStateData = new GameStateData();
                                     string gameStateJson = JsonConvert.SerializeObject(gameStateData);
@@ -138,16 +140,16 @@ namespace SnakeGame
                                     selectedItem = 0;
                                 }
                             }
-                            // Отображение главного меню
-                            // Обработка клавиш для выбора опций главного меню
+                            // Отображение главного меню.
+                            // Обработка клавиш для выбора опций главного меню.
                             break;
                         case GameState.InGame:
                             Clear();
                             
                             match = StartGame();
                             
-                            // Запуск игры
-                            // Обработка ввода клавиш для управления змейкой
+                            // Запуск игры.
+                            // Обработка ввода клавиш для управления змейкой.
                             break;
                         case GameState.GameOver:
                             Clear();
@@ -189,8 +191,8 @@ namespace SnakeGame
                                     gameState = GameState.MainMenu;
                                     break;
                             }
-                            // Отображение экрана смерти
-                            // Обработка клавиш для перезапуска игры или возврата в главное меню
+                            // Отображение экрана смерти.
+                            // Обработка клавиш для перезапуска игры или возврата в главное меню.
                             break;
                         case GameState.Paused:
                             Clear();
@@ -269,7 +271,7 @@ namespace SnakeGame
             }
             else
             {
-                // Обработка ситуации, когда файл не существует
+                // Обработка ситуации, когда файл не существует.
                 gameStateData = new GameStateData();
             }
         }
@@ -374,10 +376,10 @@ namespace SnakeGame
             {
                 SetCursorPosition(0, 0);
 
-                // Очистка предыдущей строки
+                // Очистка предыдущей строки.
                 Write(new string(' ', SCREEN_WIDTH));
                 SetCursorPosition(x, 1);
-                // Вывод строки с информацией
+                // Вывод строки с информацией.
                 Write($"| Текущий счёт: {score} |");
 
                 sw.Restart();
@@ -555,9 +557,10 @@ namespace SnakeGame
         public int Score { get; set; }
         public string PlayerName { get; set; }
 
+        // Инициализация всех свойств, которые нужно сохранить.
         public GameStateData()
         {
-            // Инициализация всех свойств, которые нужно сохранить
+        
         }
         
     }

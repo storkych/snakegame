@@ -7,9 +7,6 @@ using Newtonsoft.Json;
 
 namespace SnakeGame
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public class Snake
     {
         private readonly ConsoleColor _headColor;
