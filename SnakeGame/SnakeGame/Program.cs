@@ -101,11 +101,11 @@ namespace SnakeGame
 
                             keyInfo = ReadKey(true);
 
-                            if (keyInfo.Key == ConsoleKey.W && selectedItem > 0)
+                            if ((keyInfo.Key == ConsoleKey.W) && (selectedItem > 0))
                             {
                                 selectedItem--;
                             }
-                            else if (keyInfo.Key == ConsoleKey.S && selectedItem < menuItems.Length - 1)
+                            else if ((keyInfo.Key == ConsoleKey.S) && (selectedItem < menuItems.Length - 1))
                             {
                                 selectedItem++;
                             }
@@ -116,7 +116,7 @@ namespace SnakeGame
                                     exitRequested = true; // Устанавливаем флаг выхода
                                     cancellationTokenSource.Cancel(); // Отменяем ввод
                                 }
-                                else if (selectedItem == 0 && gameStateData.Snake != null)
+                                else if ((selectedItem == 0) && (gameStateData.Snake != null))
                                 {
                                     // Обработка продолжения игры
                                     gameState = GameState.InGame;
@@ -219,11 +219,11 @@ namespace SnakeGame
 
                             keyInfo = ReadKey(true);
 
-                            if (keyInfo.Key == ConsoleKey.W && selectedItem > 0)
+                            if ((keyInfo.Key == ConsoleKey.W) && (selectedItem > 0))
                             {
                                 selectedItem--;
                             }
-                            else if (keyInfo.Key == ConsoleKey.S && selectedItem < menuPItems.Length - 1)
+                            else if ((keyInfo.Key == ConsoleKey.S) && (selectedItem < menuPItems.Length - 1))
                             {
                                 selectedItem++;
                             }
@@ -385,7 +385,7 @@ namespace SnakeGame
                 
                 sw.Restart();
 
-                if (snake.Head.X == food.X && snake.Head.Y == food.Y)
+                if ((snake.Head.X == food.X) && (snake.Head.Y == food.Y))
                 {
                     snake.Move(currentMovement, true);
                     food = GenFood(snake);
@@ -398,11 +398,11 @@ namespace SnakeGame
                     snake.Move(currentMovement);
                 }
 
-                if (snake.Head.X == MAP_WIDTH - 1
-                    || snake.Head.X == 0
-                    || snake.Head.Y == MAP_HEIGHT - 1
-                    || snake.Head.Y == 0
-                    || snake.Body.Any(b => b.X == snake.Head.X && b.Y == snake.Head.Y))
+                if ((snake.Head.X == MAP_WIDTH - 1)
+                    || (snake.Head.X == 0)
+                    || (snake.Head.Y == MAP_HEIGHT - 1)
+                    || (snake.Head.Y == 0)
+                    || (snake.Body.Any(b => b.X == snake.Head.X && b.Y == snake.Head.Y)))
                 {
                     isGameOver = true;
                 }
