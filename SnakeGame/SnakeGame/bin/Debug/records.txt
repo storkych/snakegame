@@ -1,3 +1,4 @@
+storkych 26
 storkych 25
  13
  10
@@ -7,4 +8,3 @@ storkych 25
  7
  6
  5
- 4

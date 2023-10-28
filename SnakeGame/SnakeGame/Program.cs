@@ -68,7 +68,15 @@ namespace SnakeGame
                     {
                         case GameState.MainMenu:
                             Clear();
-
+                            Write("                                   ▄▄\n");
+                            Write("███▀▀▀███                          ██ ▀███\n");
+                            Write("█▀   ███                                ██\n");
+                            Write("▀   ███ ▀████████▄█████▄   ▄▄█▀██▀███   ██  ▄██▀ ▄█▀██▄\n");
+                            Write("   ███    ██    ██    ██  ▄█▀   ██ ██   ██ ▄█   ██   ██\n");
+                            Write("  ███   ▄ ██    ██    ██  ██▀▀▀▀▀▀ ██   ██▄██    ▄█████\n");
+                            Write(" ███   ▄█ ██    ██    ██  ██▄    ▄ ██   ██ ▀██▄ ██   ██\n");
+                            Write("█████████████  ████  ████▄ ▀█████▀████▄████▄ ██▄▄████▀██▄\n");
+                            Write("\n");
                             string[] menuItems = new string[] { "Продолжить игру", "Новая игра", "Таблица рекордов", "Выход" };
 
                             if (gameStateData.Snake == null)
@@ -183,7 +191,15 @@ namespace SnakeGame
                             break;
                         case GameState.Paused:
                             Clear();
-                            WriteLine("MAIN MENU");
+                            Write("                                             \n");
+                            Write("▀███▀▀▀██▄                                   \n");
+                            Write("  ██   ▀██▄                                  \n");
+                            Write("  ██   ▄██ ▄█▀██▄ ▀███  ▀███  ▄██▀███ ▄▄█▀██\n");
+                            Write("  ███████ ██   ██   ██    ██  ██   ▀▀▄█▀   ██\n");
+                            Write("  ██       ▄█████   ██    ██  ▀█████▄██▀▀▀▀▀▀\n");
+                            Write("  ██      ██   ██   ██    ██  █▄   ████▄    ▄\n");
+                            Write("▄████▄    ▀████▀██▄ ▀████▀███▄██████▀ ▀█████▀\n");
+                            Write("                                             \n");
 
                             string[] menuPItems = { "Продолжить игру", "Сохранить игру", "Выйти в меню" };
 
@@ -241,8 +257,16 @@ namespace SnakeGame
 
         private static void LoadData()
         {
-            string json = File.ReadAllText(fileName); // Чтение JSON из файла
-            gameStateData = JsonConvert.DeserializeObject<GameStateData>(json); 
+            if (File.Exists(fileName))
+            {
+                string json = File.ReadAllText(fileName); // Чтение JSON из файла
+                gameStateData = JsonConvert.DeserializeObject<GameStateData>(json);
+            }
+            else
+            {
+                // Обработка ситуации, когда файл не существует
+                gameStateData = new GameStateData();
+            }
         }
 
         enum GameState
