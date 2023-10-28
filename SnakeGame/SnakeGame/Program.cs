@@ -38,7 +38,10 @@ namespace SnakeGame
         static GameStateData gameStateData = new GameStateData();
 
 
-
+        /// <summary>
+        /// Главный метод, который запускает игру.
+        /// </summary>
+        /// <returns></returns>
         static async Task Main()
         {
 
@@ -49,7 +52,7 @@ namespace SnakeGame
                 GameStateData match = new GameStateData();
 
                 bool exitRequested = false;
-
+                
                 LoadData();
 
                 SetWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT + 5);
@@ -85,7 +88,7 @@ namespace SnakeGame
                                 menuItems[0] = "[Недоступно] Продолжить игру";
                             }
 
-                            for (int i = 0; i < menuItems.Length; i++)
+                            for (var i = 0; i < menuItems.Length; i++)
                             {
                                 if (i == selectedItem)
                                 {
@@ -168,7 +171,7 @@ namespace SnakeGame
                             "  ·▀▀▀▀  ▀  ▀ ▀▀  █▪▀▀▀ ▀▀▀    ▀█▄▀▪. ▀   ▀▀▀ .▀  ▀"
                             };
 
-                            for (int i = 0; i < gameOverText.Length; i++)
+                            for (var i = 0; i < gameOverText.Length; i++)
                             {
                                 SetCursorPosition(1, i);
                                 WriteLine(gameOverText[i]);
@@ -203,7 +206,7 @@ namespace SnakeGame
 
                             string[] menuPItems = { "Продолжить игру", "Сохранить игру", "Выйти в меню" };
 
-                            for (int i = 0; i < menuPItems.Length; i++)
+                            for (var i = 0; i < menuPItems.Length; i++)
                             {
                                 if (i == selectedItem)
                                 {
@@ -254,7 +257,9 @@ namespace SnakeGame
             }
             
         }
-
+        /// <summary>
+        /// Загружает данные игры из файла, если такие данные существуют.
+        /// </summary>
         private static void LoadData()
         {
             if (File.Exists(FILE_NAME))
@@ -276,14 +281,14 @@ namespace SnakeGame
             GameOver,
             Paused
         }
-
+        
         private static Direction SnakeDir = Direction.Right;
-
+       
         static Direction ReadMovement()
         {
             return SnakeDir;
         }
-
+      
         static async Task HandleInputAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
@@ -318,7 +323,10 @@ namespace SnakeGame
         }
 
         static bool pauseRequested = false;
-
+        /// <summary>
+        /// Начинает игру или продолжает сохраненную игру.
+        /// </summary>
+        /// <returns></returns>
         static GameStateData StartGame()
         {
 
@@ -440,29 +448,38 @@ namespace SnakeGame
             return matchData;
         }
 
-
+        /// <summary>
+        /// Запрашивает у пользователя ввод имени игрока.
+        /// </summary>
+        /// <returns></returns>
         static string GetPlayerName()
         {
             Clear();
             Write("Введите ваш ник: ");
             return ReadLine();
         }
-
+        /// <summary>
+        /// Отрисовывает границы игрового поля.
+        /// </summary>
         static void DrawBoard()
         {
-            for (int i = 0; i < MAP_WIDTH; i++)
+            for (var i = 0; i < MAP_WIDTH; i++)
             {
                 new Pixel(i, 0, BORDER_COLOR).Draw();
                 new Pixel(i, MAP_HEIGHT - 1, BORDER_COLOR).Draw();
             }
 
-            for (int i = 0; i < MAP_HEIGHT; i++)
+            for (var i = 0; i < MAP_HEIGHT; i++)
             {
                 new Pixel(0, i, BORDER_COLOR).Draw();
                 new Pixel(MAP_WIDTH - 1, i, BORDER_COLOR).Draw();
             }
         }
-
+        /// <summary>
+        /// Генерирует новую еду для змейки.
+        /// </summary>
+        /// <param name="snake"></param>
+        /// <returns></returns>
         static Pixel GenFood(Snake snake)
         {
             Pixel food;
@@ -476,7 +493,11 @@ namespace SnakeGame
             return food;
         }
 
-
+        /// <summary>
+        /// Считывает записи рекордов из файла.
+        /// </summary>
+        /// <param name="FILE_NAME"></param>
+        /// <returns></returns>
         static List<string> ReadRecords(string FILE_NAME)
         {
             List<string> records = new List<string>();
@@ -488,19 +509,26 @@ namespace SnakeGame
 
             return records;
         }
-
+        /// <summary>
+        /// Записывает записи рекордов в файл.
+        /// </summary>
+        /// <param name="FILE_NAME"></param>
+        /// <param name="records"></param>
         static void WriteRecords(string FILE_NAME, List<string> records)
         {
             File.WriteAllLines(FILE_NAME, records);
         }
-
+        /// <summary>
+        /// Отображает таблицу рекордов.
+        /// </summary>
+        /// <param name="records"></param>
         static void ShowRecords(List<string> records)
         {
             Clear();
 
             WriteLine("Таблица рекордов:");
 
-            for (int i = 0; i < records.Count; i++)
+            for (var i = 0; i < records.Count; i++)
             {
                 if (i >= MAX_RECORDS)
                 {
@@ -516,7 +544,9 @@ namespace SnakeGame
         }
     }
 
-
+    /// <summary>
+    /// Класс, представляющий данные о текущем состоянии игры.
+    /// </summary>
     [Serializable]
     public class GameStateData
     {
@@ -529,7 +559,7 @@ namespace SnakeGame
         {
             // Инициализация всех свойств, которые нужно сохранить
         }
-        // Другие параметры, которые вы хотите сохранить
+        
     }
 
 }

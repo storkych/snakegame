@@ -4,6 +4,9 @@ using static System.Console;
 
 namespace SnakeGame
 {
+    /// <summary>
+    /// Структура, представляющая пиксель игрового поля.
+    /// </summary>
     public readonly struct Pixel
     {
         private const char PIXEL_CHAR = '█';
@@ -23,25 +26,29 @@ namespace SnakeGame
         public ConsoleColor Color { get; }
 
         public int PixelSize { get; }
-
+        /// <summary>
+        /// Отрисовывает пиксель на экране.
+        /// </summary>
         public void Draw()
         {
             ForegroundColor = Color;
-            for (int x = 0; x < PixelSize; x++)
+            for (var x = 0; x < PixelSize; x++)
             {
-                for (int y = 0; y < PixelSize; y++)
+                for (var y = 0; y < PixelSize; y++)
                 {
                     SetCursorPosition(X * PixelSize + x, Y * PixelSize + y);
                     Write(PIXEL_CHAR);
                 }
             }
         }
-
+        /// <summary>
+        /// Убирает пиксель с экрана.
+        /// </summary>
         public void Clear()
         {
-            for (int x = 0; x < PixelSize; x++)
+            for (var x = 0; x < PixelSize; x++)
             {
-                for (int y = 0; y < PixelSize; y++)
+                for (var y = 0; y < PixelSize; y++)
                 {
                     SetCursorPosition(X * PixelSize + x, Y * PixelSize + y);
                     Write(' ');

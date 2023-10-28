@@ -7,6 +7,9 @@ using Newtonsoft.Json;
 
 namespace SnakeGame
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Snake
     {
         private readonly ConsoleColor _headColor;
@@ -18,7 +21,7 @@ namespace SnakeGame
 
             Head = new Pixel(5, 5, _headColor);
 
-            for (int i = 3; i >= 0; i--)
+            for (var i = 3; i >= 0; i--)
             {
                 Body.Enqueue(new Pixel(Head.X - i - 1, 5, _bodyColor));
             }
@@ -36,7 +39,7 @@ namespace SnakeGame
 
             Head = new Pixel(initialX, initialY, headColor);
 
-            for (int i = bodyLength; i >= 0; i--)
+            for (var i = bodyLength; i >= 0; i--)
             {
                 Body.Enqueue(new Pixel(Head.X - i - 1, initialY, _bodyColor));
             }
@@ -48,7 +51,11 @@ namespace SnakeGame
         [JsonProperty]
         public Queue<Pixel> Body { get; } = new Queue<Pixel>();
 
-
+        /// <summary>
+        /// Перемещает змейку в заданном направлении и обновляет ее позицию.
+        /// </summary>
+        /// <param name="direction"></param>
+        /// <param name="eat"></param>
         public void Move(Direction direction, bool eat = false)
         {
             Clear();
@@ -76,7 +83,9 @@ namespace SnakeGame
 
             Draw();
         }
-
+        /// <summary>
+        /// Отрисовывает змейку на экране.
+        /// </summary>
         public void Draw()
         {
             Head.Draw();
@@ -86,7 +95,9 @@ namespace SnakeGame
                 pixel.Draw();
             }
         }
-
+        /// <summary>
+        /// Убирает змейку с экрана.
+        /// </summary>
         public void Clear()
         {
             Head.Clear();
