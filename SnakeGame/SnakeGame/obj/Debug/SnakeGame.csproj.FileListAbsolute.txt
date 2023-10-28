@@ -19,6 +19,3 @@ D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGa
 D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGame.csproj.CoreCompileInputs.cache
 D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGame.exe
 D:\загрузки\гитхаб\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGame.pdb
-C:\Users\storkych\Documents\GitHub\snakegame\SnakeGame\SnakeGame\bin\Debug\Newtonsoft.Json.dll
-C:\Users\storkych\Documents\GitHub\snakegame\SnakeGame\SnakeGame\bin\Debug\Newtonsoft.Json.xml
-C:\Users\storkych\Documents\GitHub\snakegame\SnakeGame\SnakeGame\obj\Debug\SnakeGame.csproj.CopyComplete

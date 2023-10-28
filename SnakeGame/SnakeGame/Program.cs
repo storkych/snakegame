@@ -29,22 +29,26 @@ namespace SnakeGame
 
         private static readonly Random Random = new Random();
 
-        private static CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        private static Task inputTask;
+        private static GameState gameState = GameState.MainMenu;
 
-        public static int GameState = 0; // 0 - Меню, 1 - Игра, 2 - экран смерти, 3 - экран паузы
+
+
+        static GameStateData gameStateData = new GameStateData();
+
+
 
         static async Task Main(string[] args)
         {
             using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource())
             {
                 Task inputTask = HandleInputAsync(cancellationTokenSource.Token);
-                bool isPlaying = false;
-                Direction snakeDirection = Direction.Right;
+
+                GameStateData match = new GameStateData();
+
                 bool exitRequested = false;
 
-                SetWindowSize(ScreenWidth, ScreenHeight);
-                SetBufferSize(ScreenWidth, ScreenHeight);
+                SetWindowSize(ScreenWidth, ScreenHeight + 5);
+                SetBufferSize(ScreenWidth, ScreenHeight + 5);
                 CursorVisible = false;
 
                 List<string> records = ReadRecords(RecordsFileName);
@@ -55,81 +59,173 @@ namespace SnakeGame
 
                 while (!exitRequested)
                 {
+                    switch (gameState)
+                    {
+                        case GameState.MainMenu:
+                            Clear();
+                            WriteLine("MAIN MENU");
+                            string[] menuItems = {"Новая игра", "Таблица рекордов", "Выход" };
+
+                            for (int i = 0; i < menuItems.Length; i++)
+                            {
+                                if (i == selectedItem)
+                                {
+                                    ForegroundColor = ConsoleColor.White;
+                                }
+                                else
+                                {
+                                    ForegroundColor = ConsoleColor.Gray;
+                                }
+
+                                WriteLine((i == selectedItem ? ">> " : "   ") + menuItems[i]);
+                            }
+
+                            keyInfo = ReadKey(true);
+
+                            if (keyInfo.Key == ConsoleKey.W && selectedItem > 0)
+                            {
+                                selectedItem--;
+                            }
+                            else if (keyInfo.Key == ConsoleKey.S && selectedItem < menuItems.Length - 1)
+                            {
+                                selectedItem++;
+                            }
+                            else if (keyInfo.Key == ConsoleKey.Enter)
+                            {
+                                if (selectedItem == 2)
+                                {
+                                    exitRequested = true; // Устанавливаем флаг выхода
+                                    cancellationTokenSource.Cancel(); // Отменяем ввод
+                                }
+                                else if (selectedItem == 0)
+                                {
+                                    gameState = GameState.InGame;
+                                }
+                                else if (selectedItem == 1)
+                                {
+                                    ShowRecords(records);
+                                    selectedItem = 0;
+                                }
+                            }
+                            // Отображение главного меню
+                            // Обработка клавиш для выбора опций главного меню
+                            break;
+                        case GameState.InGame:
+                            Clear();
+                            
+                            match = StartGame();
+                            
+                            // Запуск игры
+                            // Обработка ввода клавиш для управления змейкой
+                            break;
+                        case GameState.GameOver:
+                            Clear();
+
+                            records.Add($"{match.playerName} {match.Score}");
+                            records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
+
+                            if (records.Count > MaxRecords)
+                            {
+                                records.RemoveAt(records.Count - 1);
+                            }
+
+                            WriteRecords(RecordsFileName, records);
+
+                            string[] gameOverText = new string[]
+                            {
+                            "  ▄▄ •  ▄▄▄· • ▌ ▄ ·. ▄▄▄ .         ▌ ▐·▄▄▄ .▄▄▄  ",
+                            " ▐█ ▀ ▪▐█ ▀█ ·██ ▐███▪▀▄.▀·   ▄█▀▄ ▪█·█▌▀▄.▀·▀▄ █·",
+                            " ▄█ ▀█▄▄█▀▀█ ▐█ ▌▐▌▐█·▐▀▀▪▄  ▐█▌.▐▌▐█▐█•▐▀▀▪▄▐▀▀▄ ",
+                            " ▐█▄▪▐█▐█▪ ▐▌██ ██▌▐█▌▐█▄▄▌  ▐█▌.▐▌ ███ ▐█▄▄▌▐█•█▌",
+                            "  ·▀▀▀▀  ▀  ▀ ▀▀  █▪▀▀▀ ▀▀▀    ▀█▄▀▪. ▀   ▀▀▀ .▀  ▀"
+                            };
+
+                            for (int i = 0; i < gameOverText.Length; i++)
+                            {
+                                SetCursorPosition(1, i);
+                                WriteLine(gameOverText[i]);
+                            }
+
+                            SetCursorPosition(1, gameOverText.Length + 2);
+                            WriteLine($"Your score: {match.Score}");
+
+                            SetCursorPosition(1, gameOverText.Length + 4);
+                            WriteLine("Press Enter to return to the main menu.");
+                            while (true)
+                            {
+                                var keyInafo = ReadKey(true);
+                                if (keyInafo.Key == ConsoleKey.Enter)
+                                    gameState = GameState.MainMenu;
+                                    break;
+                            }
+                            // Отображение экрана смерти
+                            // Обработка клавиш для перезапуска игры или возврата в главное меню
+                            break;
+                        case GameState.Paused:
+                            Clear();
+                            WriteLine("MAIN MENU");
+
+                            string[] menuPItems = { "Продолжить игру", "Сохранить игру", "Выйти в меню" };
+
+                            for (int i = 0; i < menuPItems.Length; i++)
+                            {
+                                if (i == selectedItem)
+                                {
+                                    ForegroundColor = ConsoleColor.White;
+                                }
+                                else
+                                {
+                                    ForegroundColor = ConsoleColor.Gray;
+                                }
+
+                                WriteLine((i == selectedItem ? ">> " : "   ") + menuPItems[i]);
+                            }
+
+                            keyInfo = ReadKey(true);
+
+                            if (keyInfo.Key == ConsoleKey.W && selectedItem > 0)
+                            {
+                                selectedItem--;
+                            }
+                            else if (keyInfo.Key == ConsoleKey.S && selectedItem < menuPItems.Length - 1)
+                            {
+                                selectedItem++;
+                            }
+                            else if (keyInfo.Key == ConsoleKey.Enter)
+                            {
+                                if (selectedItem == 3)
+                                {
+                                    exitRequested = true; // Устанавливаем флаг выхода
+                                    cancellationTokenSource.Cancel(); // Отменяем ввод
+                                }
+                                else if (selectedItem == 0)
+                                {
+                                    gameState = GameState.InGame;
+                                }
+                                else if (selectedItem == 2)
+                                {
+                                    ShowRecords(records);
+                                    selectedItem = 0;
+                                }
+                            }
+                            break;
+                    }
+
                     Clear();
-
-                    if (isPlaying)
-                    {
-                        string playerName = GetPlayerName();
-                        int score = StartGame();
-                        records.Add($"{playerName} {score}");
-                        records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
-
-                        if (records.Count > MaxRecords)
-                        {
-                            records.RemoveAt(records.Count - 1);
-                        }
-
-                        WriteRecords(RecordsFileName, records);
-
-                        isPlaying = false;
-                    }
-                    else
-                    {
-                        string[] menuItems = { "Продолжить", "Новая игра", "Таблица рекордов", "Выход" };
-
-                        for (int i = 0; i < menuItems.Length; i++)
-                        {
-                            if (i == selectedItem)
-                            {
-                                ForegroundColor = ConsoleColor.White;
-                            }
-                            else
-                            {
-                                ForegroundColor = ConsoleColor.Gray;
-                            }
-
-                            WriteLine((i == selectedItem ? ">> " : "   ") + menuItems[i]);
-                        }
-
-                        keyInfo = ReadKey(true);
-
-                        if (keyInfo.Key == ConsoleKey.W && selectedItem > 0)
-                        {
-                            selectedItem--;
-                        }
-                        else if (keyInfo.Key == ConsoleKey.S && selectedItem < menuItems.Length - 1)
-                        {
-                            selectedItem++;
-                        }
-                        else if (keyInfo.Key == ConsoleKey.Enter)
-                        {
-                            if (selectedItem == 3)
-                            {
-                                exitRequested = true; // Устанавливаем флаг выхода
-                                cancellationTokenSource.Cancel(); // Отменяем ввод
-                            }
-                            else if (selectedItem == 1)
-                            {
-                                isPlaying = true;
-                            }
-                            else if (selectedItem == 2)
-                            {
-                                ShowRecords(records);
-                                selectedItem = 0;
-                            }
-                        }
-                    }
-
-                    await Task.Delay(1); // Добавляем задержку
+                    await Task.Delay(1); 
                 }
-
-                // Ожидаем завершения обработки ввода
                 await inputTask;
             }
+            
         }
 
-
-
+        enum GameState
+        {
+            MainMenu,
+            InGame,
+            GameOver,
+            Paused
+        }
 
         private static Direction SnakeDir = Direction.Right;
 
@@ -148,7 +244,7 @@ namespace SnakeGame
 
                     if (key == ConsoleKey.Escape)
                     {
-                        cancellationToken.ThrowIfCancellationRequested(); // Выбрасывает исключение при отмене
+                        pauseRequested = true;
                     }
                     else if (key == ConsoleKey.W)
                     {
@@ -171,18 +267,33 @@ namespace SnakeGame
             }
         }
 
+        static bool pauseRequested = false;
 
-        static int StartGame()
+        static GameStateData StartGame()
         {
-            int score = 0;
+            string playerName = "";
             bool isGameOver = false;
+            
+            Snake snake;
+            Pixel food;
+            int score = 0;
+            GameStateData matchData = new GameStateData();
 
+            if (gameStateData.Snake == null)
+            {
+                playerName = GetPlayerName();
+                snake = new Snake(10, 5, HeadColor, BodyColor);
+                food = GenFood(snake);
+            }
+            else
+            {
+                playerName = gameStateData.playerName;
+                snake = gameStateData.Snake;
+                food = gameStateData.Food;
+                score = gameStateData.Score;
+            }
             Clear();
             DrawBoard();
-
-            Snake snake = new Snake(10, 5, HeadColor, BodyColor);
-
-            Pixel food = GenFood(snake);
             food.Draw();
 
             Direction currentMovement = Direction.Right;
@@ -191,8 +302,22 @@ namespace SnakeGame
             int lagMs = 0;
             var sw = new Stopwatch();
 
-            while (!isGameOver)
+            string infoText = $"| Текущий счёт: {score} |";
+            int x = (ScreenWidth - infoText.Length) / 2;
+            SetCursorPosition((ScreenWidth - playerName.Length)/2, ScreenHeight + 1);
+            Write($"{playerName}");
+            SetCursorPosition((ScreenWidth - 15) / 2, ScreenHeight + 3);
+            Write($"| ESC - Пауза |");
+            while (!isGameOver && !pauseRequested)
             {
+                SetCursorPosition(0, 0);
+
+                // Очистка предыдущей строки
+                Write(new string(' ', ScreenWidth));
+                SetCursorPosition(x, 1);
+                // Вывод строки с информацией
+                Write($"| Текущий счёт: {score} |");
+
                 sw.Restart();
                 Direction oldMovement = currentMovement;
 
@@ -231,55 +356,36 @@ namespace SnakeGame
                 lagMs = (int)sw.ElapsedMilliseconds;
             }
 
+            matchData.Snake = snake;
+            matchData.Food = food;
+            matchData.Score = score;
+            matchData.playerName = playerName;
+
+            if (pauseRequested)
+            {
+                pauseRequested = false;
+                gameStateData = matchData;
+                gameState = GameState.Paused;
+            }
+            else
+            {
+                gameStateData = new GameStateData();
+                for (int i = 1; i < MapWidth - 1; i++)
+                {
+                    for (int j = 1; j < MapHeight - 1; j++)
+                    {
+                        SetCursorPosition(i * 3, j);
+                        Write(" ");
+                    }
+                }
+                gameState = GameState.GameOver;
+            }
+
             snake.Clear();
             food.Clear();
-
-            for (int i = 1; i < MapWidth - 1; i++)
-            {
-                for (int j = 1; j < MapHeight - 1; j++)
-                {
-                    SetCursorPosition(i * 3, j);
-                    Write(" ");
-                }
-            }
-
-            ShowGameOver(score);
-
-            while (true)
-            {
-                var keyInfo = ReadKey(true);
-                if (keyInfo.Key == ConsoleKey.Enter)
-                    break;
-            }
-
-            return score;
+            return matchData;
         }
 
-        static void ShowGameOver(int score)
-        {
-            Clear();
-
-            string[] gameOverText = new string[]
-            {
-                "  ▄▄ •  ▄▄▄· • ▌ ▄ ·. ▄▄▄ .         ▌ ▐·▄▄▄ .▄▄▄  ",
-                " ▐█ ▀ ▪▐█ ▀█ ·██ ▐███▪▀▄.▀·   ▄█▀▄ ▪█·█▌▀▄.▀·▀▄ █·",
-                " ▄█ ▀█▄▄█▀▀█ ▐█ ▌▐▌▐█·▐▀▀▪▄  ▐█▌.▐▌▐█▐█•▐▀▀▪▄▐▀▀▄ ",
-                " ▐█▄▪▐█▐█▪ ▐▌██ ██▌▐█▌▐█▄▄▌  ▐█▌.▐▌ ███ ▐█▄▄▌▐█•█▌",
-                "  ·▀▀▀▀  ▀  ▀ ▀▀  █▪▀▀▀ ▀▀▀    ▀█▄▀▪. ▀   ▀▀▀ .▀  ▀"
-            };
-
-            for (int i = 0; i < gameOverText.Length; i++)
-            {
-                SetCursorPosition(1, i);
-                WriteLine(gameOverText[i]);
-            }
-
-            SetCursorPosition(1, gameOverText.Length + 2);
-            WriteLine($"Your score: {score}");
-
-            SetCursorPosition(1, gameOverText.Length + 4);
-            WriteLine("Press Enter to return to the main menu.");
-        }
 
         static string GetPlayerName()
         {
@@ -321,7 +427,6 @@ namespace SnakeGame
         }
 
 
-
         static List<string> ReadRecords(string fileName)
         {
             List<string> records = new List<string>();
@@ -359,6 +464,14 @@ namespace SnakeGame
             WriteLine("\nНажмите Enter, чтобы вернуться в главное меню.");
             ReadKey();
         }
+    }
+    public class GameStateData
+    {
+        public Snake Snake { get; set; }
+        public Pixel Food { get; set; }
+        public int Score { get; set; }
+        public string playerName { get; set; }
+        // Другие параметры, которые вы хотите сохранить
     }
 
 }
