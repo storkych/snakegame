@@ -22,9 +22,16 @@ namespace SnakeGame
             {
                 Body.Enqueue(new Pixel(Head.X - i - 1, 5, _bodyColor));
             }
-
-
         }
+
+        public Snake(Pixel head, Queue<Pixel> body)
+        {
+            _headColor = ConsoleColor.DarkGray;
+            _bodyColor = ConsoleColor.White;
+            Head = head;
+            Body = body;
+        }
+
         public Snake(int initialX,
             int initialY,
             ConsoleColor headColor,

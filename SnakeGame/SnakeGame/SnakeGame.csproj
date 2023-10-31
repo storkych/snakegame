@@ -46,11 +46,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GameEngine.cs" />
+    <Compile Include="GameState.cs" />
+    <Compile Include="GameStateData.cs" />
     <Compile Include="Pixel.cs" />
     <Compile Include="Direction.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Snake.cs" />
+    <Compile Include="TitlePrinter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
