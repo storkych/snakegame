@@ -11,8 +11,14 @@ using static System.Console;
 
 namespace SnakeGame
 {
+    /// <summary>
+    /// 
+    /// </summary>
     internal class TitlePrinter
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public void TitlePrint()
         {
             Write("                                   ▄▄\n");
@@ -26,6 +32,9 @@ namespace SnakeGame
             Write("\n");
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void GameOverPrint()
         {
             Write("  ▄▄ •  ▄▄▄· • ▌ ▄ ·. ▄▄▄ .         ▌ ▐·▄▄▄ .▄▄▄  \n");
@@ -36,6 +45,9 @@ namespace SnakeGame
             Write("\n");
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void PausePrint()
         {
             Write("                                             \n");

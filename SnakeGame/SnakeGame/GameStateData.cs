@@ -13,10 +13,20 @@ namespace SnakeGame
     public class GameStateData
     {
         public bool IsSavedGame = false;
+
+        //
         public Pixel Food { get; set; }
+
+        //
         public int Score { get; set; }
+
+        //
         public string PlayerName { get; set; }
+
+        //
         public Pixel Head { get; set; }
+
+        //
         public Queue<Pixel> Body { get; set; }
 
     }

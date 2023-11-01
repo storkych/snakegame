@@ -11,6 +11,9 @@ using static System.Console;
 
 namespace SnakeGame
 {
+    /// <summary>
+    /// 
+    /// </summary>
     internal class GameEngine
     {
         private const int MAP_WIDTH = 30;
@@ -31,8 +34,7 @@ namespace SnakeGame
 
         private GameState gameState;
         private GameStateData gameStateData;
-        private TitlePrinter printer;
-
+        private readonly TitlePrinter printer;
 
         static bool pauseRequested = false;
         private static Direction SnakeDir = Direction.Right;
@@ -40,7 +42,9 @@ namespace SnakeGame
         private const string RECORDS_FILE_NAME = "records.txt";
         private const string FILE_NAME = "gameState.json";
 
-
+        /// <summary>
+        /// 
+        /// </summary>
         public GameEngine()
         {
             gameState = GameState.MainMenu;
@@ -50,6 +54,9 @@ namespace SnakeGame
             SetBufferSize(SCREEN_WIDTH, SCREEN_HEIGHT + 5);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void Run()
         {
             GameStateData match = new GameStateData();
@@ -385,6 +392,10 @@ namespace SnakeGame
             return matchData;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private Direction ReadMovement()
         {
             return SnakeDir;
@@ -407,7 +418,6 @@ namespace SnakeGame
             return playerName;
         }
 
-
         /// <summary>
         /// Отрисовывает границы игрового поля.
         /// </summary>
@@ -425,6 +435,7 @@ namespace SnakeGame
                 new Pixel(MAP_WIDTH - 1, i, BORDER_COLOR).Draw();
             }
         }
+
         /// <summary>
         /// Генерирует новую еду для змейки.
         /// </summary>
@@ -476,6 +487,7 @@ namespace SnakeGame
 
             return records;
         }
+
         /// <summary>
         /// Записывает записи рекордов в файл.
         /// </summary>
@@ -485,6 +497,7 @@ namespace SnakeGame
         {
             File.WriteAllLines(FILE_NAME, records);
         }
+
         /// <summary>
         /// Отображает таблицу рекордов.
         /// </summary>

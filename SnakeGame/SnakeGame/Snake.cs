@@ -7,11 +7,17 @@ using Newtonsoft.Json;
 
 namespace SnakeGame
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Snake
     {
         private readonly ConsoleColor _headColor;
         private readonly ConsoleColor _bodyColor;
-
+        
+        /// <summary>
+        /// 
+        /// </summary>
         public Snake() {
             _headColor = ConsoleColor.DarkGray;
             _bodyColor = ConsoleColor.White;
@@ -24,6 +30,11 @@ namespace SnakeGame
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="head"></param>
+        /// <param name="body"></param>
         public Snake(Pixel head, Queue<Pixel> body)
         {
             _headColor = ConsoleColor.DarkGray;
@@ -32,6 +43,14 @@ namespace SnakeGame
             Body = body;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="initialX"></param>
+        /// <param name="initialY"></param>
+        /// <param name="headColor"></param>
+        /// <param name="bodyColor"></param>
+        /// <param name="bodyLength"></param>
         public Snake(int initialX,
             int initialY,
             ConsoleColor headColor,
@@ -50,8 +69,12 @@ namespace SnakeGame
 
             Draw();
         }
+       
+        //
         [JsonProperty]
         public Pixel Head { get; private set; }
+        
+        //
         [JsonProperty]
         public Queue<Pixel> Body { get; } = new Queue<Pixel>();
 

@@ -13,11 +13,9 @@ namespace SnakeGame
 {
     class Program
     {
-
         /// <summary>
-        /// Главный метод, который запускает игру.
+        /// 
         /// </summary>
-        /// <returns></returns>
         static void Main()
         {
             GameEngine gameEngine = new GameEngine();

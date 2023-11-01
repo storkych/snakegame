@@ -11,6 +11,13 @@ namespace SnakeGame
     {
         private const char PIXEL_CHAR = '█';
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="color"></param>
+        /// <param name="pixelSize"></param>
         public Pixel(int x, int y, ConsoleColor color, int pixelSize = 3)
         {
             X = x;
@@ -18,13 +25,19 @@ namespace SnakeGame
             Color = color;
             PixelSize = pixelSize;
         }
+       
+        //
         [JsonProperty]
         public int X { get; }
+
+        //
         [JsonProperty]
         public int Y { get; }
 
+        //
         public ConsoleColor Color { get; }
 
+        //
         public int PixelSize { get; }
         /// <summary>
         /// Отрисовывает пиксель на экране.
