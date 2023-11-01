@@ -220,7 +220,12 @@ namespace SnakeGame
                                     string gameStateJson = JsonConvert.SerializeObject(gameStateData);
                                     File.WriteAllText(FILE_NAME, gameStateJson);
                                     Write("Сохранение произошло");
-                                }
+                                    System.Threading.Thread.Sleep(1000);
+                                    // Очистить фразу после ожидания
+                                    Console.SetCursorPosition(0, Console.CursorTop);
+                                    Console.Write(new string(' ', "Сохранение произошло".Length));
+                                    Console.SetCursorPosition(0, Console.CursorTop);
+                            }
                             }
                             break;
                     }
@@ -391,9 +396,15 @@ namespace SnakeGame
         /// <returns></returns>
         private string GetPlayerName()
         {
-            Clear();
-            Write("Введите ваш ник: ");
-            return ReadLine();
+            string playerName;
+            do
+            {
+                Clear();
+                Write("Введите ваш ник: ");
+                playerName = ReadLine();
+            } while (playerName.Length > 15);
+
+            return playerName;
         }
 
 
