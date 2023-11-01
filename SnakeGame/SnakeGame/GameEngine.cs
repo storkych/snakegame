@@ -20,7 +20,7 @@ namespace SnakeGame
         private const int SCREEN_WIDTH = MAP_WIDTH * 3;
         private const int SCREEN_HEIGHT = MAP_HEIGHT * 3;
 
-        private const int FRAME_MILLISECONDS = 150;
+        private const int FRAME_MILLISECONDS = 200;
 
         private const ConsoleColor BORDER_COLOR = ConsoleColor.White;
         private const ConsoleColor FOOD_COLOR = ConsoleColor.Green;
