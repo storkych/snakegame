@@ -402,7 +402,7 @@ namespace SnakeGame
         }
 
         /// <summary>
-        /// Запрашивает у пользователя ввод имени игрока.
+        /// Запрашивает у пользователя ввод ника.
         /// </summary>
         /// <returns></returns>
         private string GetPlayerName()
@@ -412,9 +412,14 @@ namespace SnakeGame
             {
                 Clear();
                 Write("Введите ваш ник: ");
-                playerName = ReadLine();
-            } while (playerName.Length > 15);
-
+                // Если ReadLine() возвращает null, присвоим пустую строку.
+                playerName = ReadLine() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(playerName))
+                {
+                    WriteLine("Имя не может быть пустым. Пожалуйста, введите ваш ник.");
+                    ReadKey();
+                }
+            } while (string.IsNullOrEmpty(playerName) || playerName.Length > 15);
             return playerName;
         }
 
@@ -462,7 +467,7 @@ namespace SnakeGame
             if (File.Exists(FILE_NAME))
             {
                 string json = File.ReadAllText(FILE_NAME); // Чтение JSON из файла
-                gameStateData = JsonConvert.DeserializeObject<GameStateData>(json);
+                gameStateData = JsonConvert.DeserializeObject<GameStateData>(json) ?? new GameStateData();
             }
             else
             {
