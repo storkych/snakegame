@@ -35,12 +35,11 @@ namespace SnakeGame
         private GameState gameState;
         private GameStateData gameStateData;
         private readonly TitlePrinter printer;
+        private SaveLoadManager saveLoadManager;
 
         static bool pauseRequested = false;
-        private static Direction SnakeDir = Direction.Right;
 
-        private const string RECORDS_FILE_NAME = "records.txt";
-        private const string FILE_NAME = "gameState.json";
+
 
         /// <summary>
         /// 
@@ -50,6 +49,7 @@ namespace SnakeGame
             gameState = GameState.MainMenu;
             gameStateData = new GameStateData();
             printer = new TitlePrinter();
+            saveLoadManager = new SaveLoadManager();
             SetWindowSize(SCREEN_WIDTH, SCREEN_HEIGHT + 5);
             SetBufferSize(SCREEN_WIDTH, SCREEN_HEIGHT + 5);
         }
@@ -62,11 +62,10 @@ namespace SnakeGame
             GameStateData match = new GameStateData();
             
             bool exitRequested = false;
-
-            LoadData();
+            gameStateData = saveLoadManager.LoadData();
             CursorVisible = false;
+            List<string> records = saveLoadManager.ReadRecords();
 
-            List<string> records = ReadRecords(RECORDS_FILE_NAME);
             records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
 
             ConsoleKeyInfo keyInfo;
@@ -132,8 +131,7 @@ namespace SnakeGame
                                     // Обработка начала новой игры.
                                     gameState = GameState.InGame;
                                     gameStateData = new GameStateData();
-                                    string gameStateJson = JsonConvert.SerializeObject(gameStateData);
-                                    File.WriteAllText(FILE_NAME, gameStateJson);
+                                    saveLoadManager.QuietSave(gameStateData);
                                 }
                                 else if (selectedItem == 2)
                                 {
@@ -160,12 +158,8 @@ namespace SnakeGame
                             records.Add($"{match.PlayerName} {match.Score}");
                             records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
 
-                            if (records.Count > MAX_RECORDS)
-                            {
-                                records.RemoveAt(records.Count - 1);
-                            }
 
-                            WriteRecords(RECORDS_FILE_NAME, records);
+                            saveLoadManager.WriteRecords(records);
 
                             printer.GameOverPrint();
                             WriteLine($"Ваши очки: {match.Score}\n");
@@ -224,14 +218,7 @@ namespace SnakeGame
                                 }
                                 else if (selectedItem == 1)
                                 {
-                                    string gameStateJson = JsonConvert.SerializeObject(gameStateData);
-                                    File.WriteAllText(FILE_NAME, gameStateJson);
-                                    Write("Сохранение произошло");
-                                    System.Threading.Thread.Sleep(1000);
-                                    // Очистить фразу после ожидания
-                                    Console.SetCursorPosition(0, Console.CursorTop);
-                                    Console.Write(new string(' ', "Сохранение произошло".Length));
-                                    Console.SetCursorPosition(0, Console.CursorTop);
+                                    saveLoadManager.SaveData(gameStateData);
                             }
                             }
                             break;
@@ -254,7 +241,7 @@ namespace SnakeGame
             Pixel food;
             int score = 0;
             GameStateData matchData = new GameStateData();
-
+            Direction SnakeDir;
 
             if (!gameStateData.IsSavedGame)
             {
@@ -263,6 +250,7 @@ namespace SnakeGame
 
                 snake = new Snake(10, 5, HEAD_COLOR, BODY_COLOR);
                 food = GenFood(snake);
+                SnakeDir = Direction.Right;
             }
             else
             {
@@ -270,6 +258,7 @@ namespace SnakeGame
                 snake = new Snake(gameStateData.Head, gameStateData.Body);
                 food = gameStateData.Food;
                 score = gameStateData.Score;
+                SnakeDir = gameStateData.SnakeDir;
             }
             Clear();
             DrawBoard();
@@ -328,7 +317,7 @@ namespace SnakeGame
                 {
                     if (currentMovement == oldMovement)
                     {
-                        currentMovement = ReadMovement();
+                        currentMovement = SnakeDir;
                     }
                 }
 
@@ -365,6 +354,7 @@ namespace SnakeGame
             matchData.PlayerName = playerName;
             matchData.Head = snake.Head;
             matchData.Body = snake.Body;
+            matchData.SnakeDir = SnakeDir;
 
             if (pauseRequested)
             {
@@ -376,6 +366,7 @@ namespace SnakeGame
             else
             {
                 gameStateData = new GameStateData();
+                saveLoadManager.QuietSave(gameStateData);
                 for (int i = 1; i < MAP_WIDTH - 1; i++)
                 {
                     for (int j = 1; j < MAP_HEIGHT - 1; j++)
@@ -390,15 +381,6 @@ namespace SnakeGame
             snake.Clear();
             food.Clear();
             return matchData;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        private Direction ReadMovement()
-        {
-            return SnakeDir;
         }
 
         /// <summary>
@@ -460,50 +442,6 @@ namespace SnakeGame
         }
 
         /// <summary>
-        /// Загружает данные игры из файла, если такие данные существуют.
-        /// </summary>
-        private void LoadData()
-        {
-            if (File.Exists(FILE_NAME))
-            {
-                string json = File.ReadAllText(FILE_NAME); // Чтение JSON из файла
-                gameStateData = JsonConvert.DeserializeObject<GameStateData>(json) ?? new GameStateData();
-            }
-            else
-            {
-                // Обработка ситуации, когда файл не существует.
-                gameStateData = new GameStateData();
-            }
-        }
-
-        /// <summary>
-        /// Считывает записи рекордов из файла.
-        /// </summary>
-        /// <param name="FILE_NAME"></param>
-        /// <returns></returns>
-        private List<string> ReadRecords(string FILE_NAME)
-        {
-            List<string> records = new List<string>();
-
-            if (File.Exists(FILE_NAME))
-            {
-                records = File.ReadAllLines(FILE_NAME).ToList();
-            }
-
-            return records;
-        }
-
-        /// <summary>
-        /// Записывает записи рекордов в файл.
-        /// </summary>
-        /// <param name="FILE_NAME"></param>
-        /// <param name="records"></param>
-        private void WriteRecords(string FILE_NAME, List<string> records)
-        {
-            File.WriteAllLines(FILE_NAME, records);
-        }
-
-        /// <summary>
         /// Отображает таблицу рекордов.
         /// </summary>
         /// <param name="records"></param>
@@ -521,6 +459,7 @@ namespace SnakeGame
                 }
 
                 string[] record = records[i].Split(' ');
+                Debug.WriteLine(i);
                 WriteLine($"{i + 1}. {record[0]}: {record[1]}");
             }
 

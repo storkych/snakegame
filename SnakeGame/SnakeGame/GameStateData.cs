@@ -29,5 +29,8 @@ namespace SnakeGame
         //
         public Queue<Pixel> Body { get; set; }
 
+        //
+        public Direction SnakeDir { get; set; }
+
     }
 }
