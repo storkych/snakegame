@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 using static System.Console;
 
 namespace SnakeGame
 {
     /// <summary>
-    /// 
+    /// Класс, отвечающий за логику игры.
     /// </summary>
     internal class GameEngine
     {
@@ -35,14 +30,12 @@ namespace SnakeGame
         private GameState gameState;
         private GameStateData gameStateData;
         private readonly TitlePrinter printer;
-        private SaveLoadManager saveLoadManager;
+        private readonly SaveLoadManager saveLoadManager;
 
         static bool pauseRequested = false;
 
-
-
         /// <summary>
-        /// 
+        /// Конструктор класса GameEngine.
         /// </summary>
         public GameEngine()
         {
@@ -55,7 +48,7 @@ namespace SnakeGame
         }
 
         /// <summary>
-        /// 
+        /// Логика работы игры (главное меню, меню паузы).
         /// </summary>
         public void Run()
         {
@@ -75,7 +68,9 @@ namespace SnakeGame
                 {
                     switch (gameState)
                     {
-                        case GameState.MainMenu:
+                    // Отображение главного меню.
+                    // Обработка клавиш для выбора опций главного меню.
+                    case GameState.MainMenu:
 
                             Clear();
                             printer.TitlePrint();
@@ -118,8 +113,6 @@ namespace SnakeGame
                                 {
                                     // Устанавливаем флаг выхода.
                                     exitRequested = true;
-                                    // Отменяем ввод.
-                                    //cancellationTokenSource.Cancel();
                                 }
                                 else if ((selectedItem == 0) && (gameStateData.IsSavedGame))
                                 {
@@ -138,26 +131,23 @@ namespace SnakeGame
                                     ShowRecords(records);
                                     selectedItem = 0;
                                 }
-                            }
-                            // Отображение главного меню.
-                            // Обработка клавиш для выбора опций главного меню.
+                            }                            
                             break;
-                        case GameState.InGame:
+                    // Запуск самой игры со змейкой.                    
+                    case GameState.InGame:
 
                             Clear();
-
                             match = StartGame();
-
-                            // Запуск игры.
-                            // Обработка ввода клавиш для управления змейкой.
+                                                    
                             break;
-                        case GameState.GameOver:
+                    // Отображение экрана смерти.
+                    // Обработка клавиш для перезапуска игры или возврата в главное меню.
+                    case GameState.GameOver:
 
                             Clear();
 
                             records.Add($"{match.PlayerName} {match.Score}");
                             records.Sort((a, b) => int.Parse(b.Split(' ')[1]) - int.Parse(a.Split(' ')[1]));
-
 
                             saveLoadManager.WriteRecords(records);
 
@@ -171,9 +161,7 @@ namespace SnakeGame
                                 if (keyInafo.Key == ConsoleKey.Enter)
                                     gameState = GameState.MainMenu;
                                 break;
-                            }
-                            // Отображение экрана смерти.
-                            // Обработка клавиш для перезапуска игры или возврата в главное меню.
+                            }                            
                             break;
                         case GameState.Paused:
 
@@ -219,7 +207,7 @@ namespace SnakeGame
                                 else if (selectedItem == 1)
                                 {
                                     saveLoadManager.SaveData(gameStateData);
-                            }
+                                }
                             }
                             break;
                     }
@@ -233,7 +221,6 @@ namespace SnakeGame
         /// <returns></returns>
         private GameStateData StartGame()
         {
-
             string playerName = "";
             bool isGameOver = false;
 
@@ -245,7 +232,6 @@ namespace SnakeGame
 
             if (!gameStateData.IsSavedGame)
             {
-
                 playerName = GetPlayerName();
 
                 snake = new Snake(10, 5, HEAD_COLOR, BODY_COLOR);
@@ -266,7 +252,6 @@ namespace SnakeGame
 
             Direction currentMovement = Direction.Right;
 
-
             int lagMs = 0;
             var sw = new Stopwatch();
 
@@ -278,7 +263,8 @@ namespace SnakeGame
             Write($"| ESC - Пауза |");
             while (!isGameOver && !pauseRequested)
             {
-                HandleUserInput(ref SnakeDir);
+                // Метод, считывающий управление.
+                HandleUserInput(ref SnakeDir); 
                 SetCursorPosition(0, 0);
                 // Очистка предыдущей строки.
                 Write(new string(' ', SCREEN_WIDTH));
@@ -298,7 +284,7 @@ namespace SnakeGame
                 }
 
                 sw.Restart();
-
+                                
                 if ((snake.Head.X == food.X) && (snake.Head.Y == food.Y))
                 {
                     snake.Move(currentMovement, true);
@@ -311,7 +297,7 @@ namespace SnakeGame
                 {
                     snake.Move(currentMovement);
                 }
-
+                // Условие смерти змейки.
                 if ((snake.Head.X == MAP_WIDTH - 1)
                     || (snake.Head.X == 0)
                     || (snake.Head.Y == MAP_HEIGHT - 1)
@@ -323,7 +309,6 @@ namespace SnakeGame
 
                 lagMs = (int)sw.ElapsedMilliseconds;
             }
-
 
             matchData.Food = food;
             matchData.Score = score;
@@ -359,6 +344,10 @@ namespace SnakeGame
             return matchData;
         }
 
+        /// <summary>
+        /// Считывает нажатия клавиш пользователем и меняет направление змейки.
+        /// </summary>
+        /// <param name="snakeDir"> - направление змейки. </param>
         private void HandleUserInput(ref Direction snakeDir)
         {
             if (Console.KeyAvailable)
@@ -430,7 +419,7 @@ namespace SnakeGame
         /// <summary>
         /// Генерирует новую еду для змейки.
         /// </summary>
-        /// <param name="snake"></param>
+        /// <param name="snake"> - змея. </param>
         /// <returns></returns>
         private Pixel GenFood(Snake snake)
         {
@@ -448,7 +437,7 @@ namespace SnakeGame
         /// <summary>
         /// Отображает таблицу рекордов.
         /// </summary>
-        /// <param name="records"></param>
+        /// <param name="records"> - лист рекордов. </param>
         private void ShowRecords(List<string> records)
         {
             Clear();

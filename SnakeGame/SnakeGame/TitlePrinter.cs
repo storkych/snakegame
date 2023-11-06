@@ -1,23 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using System.IO;
-using System.Threading;
-using Newtonsoft.Json;
-using static System.Console;
+﻿using static System.Console;
 
 namespace SnakeGame
 {
     /// <summary>
-    /// 
+    /// Класс, отвечающий за отрисовку заголовков.
     /// </summary>
     internal class TitlePrinter
     {
         /// <summary>
-        /// 
+        /// Отрисовка заголовка игры над основным меню.
         /// </summary>
         public void TitlePrint()
         {
@@ -33,7 +24,7 @@ namespace SnakeGame
         }
 
         /// <summary>
-        /// 
+        /// Отрисовка экрана смерти в результате смерти.
         /// </summary>
         public void GameOverPrint()
         {
@@ -46,7 +37,7 @@ namespace SnakeGame
         }
 
         /// <summary>
-        /// 
+        /// Отрисовка экрана паузы над меню паузы.
         /// </summary>
         public void PausePrint()
         {
@@ -61,7 +52,5 @@ namespace SnakeGame
             Write("                                             \n");
             Write("\n");
         }
-
-
     }
 }

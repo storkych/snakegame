@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace SnakeGame
 {
     /// <summary>
-    /// 
+    /// Класс, который отвечает за создание и движение змейки.
     /// </summary>
     public class Snake
     {
@@ -16,7 +13,7 @@ namespace SnakeGame
         private readonly ConsoleColor _bodyColor;
         
         /// <summary>
-        /// 
+        /// Конструктор класса Snake без параметров.
         /// </summary>
         public Snake() {
             _headColor = ConsoleColor.DarkGray;
@@ -31,10 +28,10 @@ namespace SnakeGame
         }
 
         /// <summary>
-        /// 
+        /// Конструктор класса Snake с параметрами.
         /// </summary>
-        /// <param name="head"></param>
-        /// <param name="body"></param>
+        /// <param name="head"> - пиксель головы змейки.</param>
+        /// <param name="body"> - пиксель тела змейки.</param>
         public Snake(Pixel head, Queue<Pixel> body)
         {
             _headColor = ConsoleColor.DarkGray;
@@ -44,13 +41,13 @@ namespace SnakeGame
         }
 
         /// <summary>
-        /// 
+        /// Конструктор класса Snake с параметрами.
         /// </summary>
-        /// <param name="initialX"></param>
-        /// <param name="initialY"></param>
-        /// <param name="headColor"></param>
-        /// <param name="bodyColor"></param>
-        /// <param name="bodyLength"></param>
+        /// <param name="initialX"> - координата положения головы. </param>
+        /// <param name="initialY"> - координата положения головы. </param>
+        /// <param name="headColor"> - цвет головы змейки. </param>
+        /// <param name="bodyColor"> - цвет тела змейки. </param>
+        /// <param name="bodyLength"> - длина тела змейки. </param>
         public Snake(int initialX,
             int initialY,
             ConsoleColor headColor,
@@ -70,19 +67,19 @@ namespace SnakeGame
             Draw();
         }
        
-        //
+        // Свойство для получения и установления значений пикселя головы.
         [JsonProperty]
         public Pixel Head { get; private set; }
         
-        //
+        // Свойство для получения очереди пикселей тела змейки.
         [JsonProperty]
         public Queue<Pixel> Body { get; } = new Queue<Pixel>();
 
         /// <summary>
         /// Перемещает змейку в заданном направлении и обновляет ее позицию.
         /// </summary>
-        /// <param name="direction"></param>
-        /// <param name="eat"></param>
+        /// <param name="direction"> - направление змейки. </param>
+        /// <param name="eat"> - съела ли змейка что-то за этот ход (true/false). </param>
         public void Move(Direction direction, bool eat = false)
         {
             Clear();
@@ -110,6 +107,7 @@ namespace SnakeGame
 
             Draw();
         }
+
         /// <summary>
         /// Отрисовывает змейку на экране.
         /// </summary>
@@ -122,6 +120,7 @@ namespace SnakeGame
                 pixel.Draw();
             }
         }
+
         /// <summary>
         /// Убирает змейку с экрана.
         /// </summary>

@@ -12,7 +12,7 @@ namespace SnakeGame
         private const char PIXEL_CHAR = '█';
 
         /// <summary>
-        /// 
+        /// Конструктор класса Pixel с параметрами.
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
@@ -26,19 +26,20 @@ namespace SnakeGame
             PixelSize = pixelSize;
         }
        
-        //
+        // Свойство для получения информации о координате Х.
         [JsonProperty]
         public int X { get; }
 
-        //
+        // Свойство для получения информации о координате Y.
         [JsonProperty]
         public int Y { get; }
 
-        //
+        // Свойство для получения информации о цвете пикселя.
         public ConsoleColor Color { get; }
 
-        //
+        // Свойство для получения информации о размере пикселя.
         public int PixelSize { get; }
+
         /// <summary>
         /// Отрисовывает пиксель на экране.
         /// </summary>
@@ -54,6 +55,7 @@ namespace SnakeGame
                 }
             }
         }
+
         /// <summary>
         /// Убирает пиксель с экрана.
         /// </summary>

@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using static System.Console;
 
 namespace SnakeGame
 {
+    /// <summary>
+    /// Класс, отвечающий за сохранение и загрузку данных.
+    /// </summary>
     internal class SaveLoadManager
     {
-
         private const string RECORDS_FILE_NAME = "records.txt";
         private const string FILE_NAME = "gameState.json";
 
@@ -25,7 +22,8 @@ namespace SnakeGame
             GameStateData data;
             if (File.Exists(FILE_NAME))
             {
-                string json = File.ReadAllText(FILE_NAME); // Чтение JSON из файла
+                // Чтение JSON из файла.
+                string json = File.ReadAllText(FILE_NAME); 
                 data = JsonConvert.DeserializeObject<GameStateData>(json) ?? new GameStateData();
             }
             else
@@ -35,6 +33,11 @@ namespace SnakeGame
             }
             return data;
         }
+
+        /// <summary>
+        /// Отвечает за сохранение данных текущей игры.
+        /// </summary>
+        /// <param name="gameStateData"> - передача текущего состояния игры. </param>
         public void SaveData(GameStateData gameStateData)
         {
             string gameStateJson = JsonConvert.SerializeObject(gameStateData);
@@ -47,6 +50,10 @@ namespace SnakeGame
             Console.SetCursorPosition(0, Console.CursorTop);
         }
 
+        /// <summary>
+        /// Отвечает за сохранение данных текущей игры (вызывается при создании новой игры).
+        /// </summary>
+        /// <param name="gameStateData"> - передача текущего состояния игры. </param>
         public void QuietSave(GameStateData gameStateData)
         {
             string gameStateJson = JsonConvert.SerializeObject(gameStateData);
@@ -54,10 +61,9 @@ namespace SnakeGame
         }
 
         /// <summary>
-        /// Считывает записи рекордов из файла.
+        /// Cчитывает записи рекордов из файла.
         /// </summary>
-        /// <param name="FILE_NAME"></param>
-        /// <returns></returns>
+        /// <returns>Возвращает список рекордов. </returns>
         public List<string> ReadRecords()
         {
             List<string> records = new List<string>();
@@ -71,10 +77,9 @@ namespace SnakeGame
         }
 
         /// <summary>
-        /// Записывает записи рекордов в файл.
+        /// Записываем рекорды в файл.
         /// </summary>
-        /// <param name="FILE_NAME"></param>
-        /// <param name="records"></param>
+        /// <param name="records"> - список рекордов. </param>
         public void WriteRecords(List<string> records)
         {
             File.WriteAllLines(RECORDS_FILE_NAME, records);
