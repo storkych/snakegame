@@ -278,32 +278,8 @@ namespace SnakeGame
             Write($"| ESC - Пауза |");
             while (!isGameOver && !pauseRequested)
             {
-                if (Console.KeyAvailable)
-                {
-                    var key = Console.ReadKey(intercept: true).Key;
-                    if (key == ConsoleKey.Escape)
-                    {
-                        pauseRequested = true;
-                    }
-                    else if (key == ConsoleKey.W)
-                    {
-                        if (SnakeDir != Direction.Down) { SnakeDir = Direction.Up; }
-                    }
-                    else if (key == ConsoleKey.S)
-                    {
-                        if (SnakeDir != Direction.Up) { SnakeDir = Direction.Down; }
-                    }
-                    else if (key == ConsoleKey.A)
-                    {
-                        if (SnakeDir != Direction.Right) { SnakeDir = Direction.Left; }
-                    }
-                    else if (key == ConsoleKey.D)
-                    {
-                        if (SnakeDir != Direction.Left) { SnakeDir = Direction.Right; }
-                    }
-                }
+                HandleUserInput(ref SnakeDir);
                 SetCursorPosition(0, 0);
-
                 // Очистка предыдущей строки.
                 Write(new string(' ', SCREEN_WIDTH));
                 SetCursorPosition(x, 1);
@@ -381,6 +357,34 @@ namespace SnakeGame
             snake.Clear();
             food.Clear();
             return matchData;
+        }
+
+        private void HandleUserInput(ref Direction snakeDir)
+        {
+            if (Console.KeyAvailable)
+            {
+                var key = Console.ReadKey(intercept: true).Key;
+                if (key == ConsoleKey.Escape)
+                {
+                    pauseRequested = true;
+                }
+                else if (key == ConsoleKey.W)
+                {
+                    if (snakeDir != Direction.Down) { snakeDir = Direction.Up; }
+                }
+                else if (key == ConsoleKey.S)
+                {
+                    if (snakeDir != Direction.Up) { snakeDir = Direction.Down; }
+                }
+                else if (key == ConsoleKey.A)
+                {
+                    if (snakeDir != Direction.Right) { snakeDir = Direction.Left; }
+                }
+                else if (key == ConsoleKey.D)
+                {
+                    if (snakeDir != Direction.Left) { snakeDir = Direction.Right; }
+                }
+            }
         }
 
         /// <summary>

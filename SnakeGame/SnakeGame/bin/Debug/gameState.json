@@ -1,1 +1,1 @@
-{"IsSavedGame":false,"Food":{"X":0,"Y":0,"Color":0,"PixelSize":0},"Score":0,"PlayerName":null,"Head":{"X":0,"Y":0,"Color":0,"PixelSize":0},"Body":null,"SnakeDir":0}
+{"IsSavedGame":true,"Food":{"X":4,"Y":2,"Color":10,"PixelSize":3},"Score":2,"PlayerName":"dds","Head":{"X":16,"Y":6,"Color":8,"PixelSize":3},"Body":[{"X":10,"Y":6,"Color":15,"PixelSize":3},{"X":11,"Y":6,"Color":15,"PixelSize":3},{"X":12,"Y":6,"Color":15,"PixelSize":3},{"X":13,"Y":6,"Color":15,"PixelSize":3},{"X":14,"Y":6,"Color":15,"PixelSize":3},{"X":15,"Y":6,"Color":15,"PixelSize":3}],"SnakeDir":2}
