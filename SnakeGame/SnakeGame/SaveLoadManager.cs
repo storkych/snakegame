@@ -65,8 +65,20 @@ namespace SnakeGame
             {
                 // Обработка исключения при сохранении данных.
                 Console.WriteLine("Произошла ошибка при сохранении данных: " + ex.Message);
+
+                // Попытка создания файла и повторной попытки сохранения данных
+                try
+                {
+                    File.WriteAllText(FILE_NAME, JsonConvert.SerializeObject(gameStateData));
+                    Console.WriteLine("Создан новый файл и данные успешно сохранены.");
+                }
+                catch (Exception createFileEx)
+                {
+                    Console.WriteLine("Не удалось создать файл: " + createFileEx.Message);
+                }
             }
         }
+
 
 
         /// <summary>
