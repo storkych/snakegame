@@ -394,7 +394,17 @@ namespace SnakeGame
                     WriteLine("Имя не может быть пустым. Пожалуйста, введите ваш ник.");
                     ReadKey();
                 }
-            } while (string.IsNullOrEmpty(playerName) || playerName.Length > 15);
+                else if (playerName.Length > 15)
+                {
+                    WriteLine("Имя не может быть больше 15 символов. Пожалуйста, введите ваш ник.");
+                    ReadKey();
+                }
+                else if (playerName.Contains(" "))
+                {
+                    WriteLine("Имя не может включать пробел. Пожалуйста, введите ваш ник.");
+                    ReadKey();
+                }
+            } while (string.IsNullOrEmpty(playerName) || playerName.Length > 15 || playerName.Contains(" "));
             return playerName;
         }
 
