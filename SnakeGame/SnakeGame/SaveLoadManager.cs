@@ -36,7 +36,7 @@ namespace SnakeGame
             }
             catch (Exception ex)
             {
-                // Обработка исключения, например, запись в лог или возврат значения по умолчанию.
+                // Обработка исключения
                 Console.WriteLine("Произошла ошибка при загрузке данных: " + ex.Message);
                 data = new GameStateData();
             }
