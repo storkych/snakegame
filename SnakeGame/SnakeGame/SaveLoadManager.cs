@@ -20,19 +20,29 @@ namespace SnakeGame
         public GameStateData LoadData()
         {
             GameStateData data;
-            if (File.Exists(FILE_NAME))
+            try
             {
-                // Чтение JSON из файла.
-                string json = File.ReadAllText(FILE_NAME); 
-                data = JsonConvert.DeserializeObject<GameStateData>(json) ?? new GameStateData();
+                if (File.Exists(FILE_NAME))
+                {
+                    // Чтение JSON из файла.
+                    string json = File.ReadAllText(FILE_NAME);
+                    data = JsonConvert.DeserializeObject<GameStateData>(json) ?? new GameStateData();
+                }
+                else
+                {
+                    // Обработка ситуации, когда файл не существует.
+                    data = new GameStateData();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // Обработка ситуации, когда файл не существует.
+                // Обработка исключения, например, запись в лог или возврат значения по умолчанию.
+                Console.WriteLine("Произошла ошибка при загрузке данных: " + ex.Message);
                 data = new GameStateData();
             }
             return data;
         }
+
 
         /// <summary>
         /// Отвечает за сохранение данных текущей игры.
@@ -40,15 +50,24 @@ namespace SnakeGame
         /// <param name="gameStateData"> - передача текущего состояния игры. </param>
         public void SaveData(GameStateData gameStateData)
         {
-            string gameStateJson = JsonConvert.SerializeObject(gameStateData);
-            File.WriteAllText(FILE_NAME, gameStateJson);
-            Console.Write("Сохранение произошло");
-            System.Threading.Thread.Sleep(1000);
-            // Очистить фразу после ожидания
-            Console.SetCursorPosition(0, Console.CursorTop);
-            Console.Write(new string(' ', "Сохранение произошло".Length));
-            Console.SetCursorPosition(0, Console.CursorTop);
+            try
+            {
+                string gameStateJson = JsonConvert.SerializeObject(gameStateData);
+                File.WriteAllText(FILE_NAME, gameStateJson);
+                Console.Write("Сохранение произошло");
+                System.Threading.Thread.Sleep(1000);
+                // Очистить фразу после ожидания
+                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.Write(new string(' ', "Сохранение произошло".Length));
+                Console.SetCursorPosition(0, Console.CursorTop);
+            }
+            catch (Exception ex)
+            {
+                // Обработка исключения при сохранении данных.
+                Console.WriteLine("Произошла ошибка при сохранении данных: " + ex.Message);
+            }
         }
+
 
         /// <summary>
         /// Отвечает за сохранение данных текущей игры (вызывается при создании новой игры).
